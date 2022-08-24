@@ -1,6 +1,51 @@
+#' @param method the method used to implement test. Defaults to "nonparametric",
+#' which will use "wilcox.test" to compare two groups and use "kruskal.test" to
+#' compare three or more groups. Support lamda created from a formula. This can
+#' also be "none" indicates no test will be implemented.
+#' @param compare_list A list of atomic vectors with at least 2 length. The
+#' entries in the vector are the values on the x-axis indicating the comparison
+#' among what groups.
+#' @param method_args arguments passed to function specified in **method**.
+#' @param tidy_fn A function or formula which accepts results returned by
+#' function in **method** and return a scalar character.
+#'
+#'   If a **function**, it is used as is.
+#'
+#'   If a **formula**, e.g. `~ .x + 2`, it is converted to a function with up to
+#'   two arguments: `.x` (single argument) or `.x` and `.y` (two arguments). The
+#'   `.` placeholder can be used instead of `.x`.  This allows you to create
+#'   very compact anonymous functions (lambdas) with up to two inputs. Functions
+#'   created from formulas have a special class. Use `is_lambda()` to test for
+#'   it.
+#'
+#'   If a **string**, the function is looked up in `globalenv()`.
+#' Notes: if **method** is "none", this can be a list (whose length should equal
+#' to the number of **PANEL**) of labels corresponding to each comparisons in
+#' compare_list, this can be matched by position or names if both **tidy_fn**
+#' and **compare_list** have names.
+#' @inheritParams ggplot2::stat_identity
+#' @section Computed variables:
+#' `stat_comparetest()` provides the following variables, some of which depend on the orientation:
+#' \describe{
+#'   \item{xmin *or* ymin}{the left (or lower) side of horizontal (or vertical)
+#'   segments underneath label}
+#'   \item{xmax *or* ymax}{the right (or upper) side of horizontal (or vertical)
+#'   segments underneath label}
+#'   \item{x *or* y}{the x (or y) coordinates for labels, usually equal to 
+#'   (xmin + xmax) / 2 or (ymin + ymax) / 2}
+#'   \item{y *or* x}{the y (or x) coordinates for labels, usually equal to 
+#'   (ymin + ymax) / 2 or (xmin + xmax) / 2}
+#'   \item{label}{the statistical test results}
+#'   \item{tip}{a list of data.frame gives the coordinates of tip where x
+#'   corresponds to the x axis of current comparison group, and y corresponds to
+#'   the maximal values of current comparison group the tip length is reverse to
+#'   the y value}
+#' }
+#' @rdname geom_comparetest
+#' @export 
 stat_comparetest <- function(mapping = NULL, data = NULL, method = NULL,
                              compare_list = NULL,
-                             method_args = list(), tidy_fn = NULL,
+                             method_args = NULL, tidy_fn = NULL,
                              geom = "comparetest", position = "identity",
                              na.rm = FALSE, show.legend = NA,
                              inherit.aes = TRUE, ...) {
@@ -23,6 +68,7 @@ stat_comparetest <- function(mapping = NULL, data = NULL, method = NULL,
 #' @usage NULL
 #' @export
 StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
+    required_aes = c("x", "y"),
     setup_params = function(self, data, params) {
         # orientation should be the axis with Categorical variable
         params$flipped_aes <- ggplot2::has_flipped_aes(
@@ -69,7 +115,7 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
             cli::cli_warn(
                 c(
                     "Cannot implment statistical test.",
-                    "!" = "the number of unique values in {.field {ggplot2::flipped_names(params$flipped_aes)$x}} is below than 2." # nolint
+                    "!" = "the number of unique values in {.field {ggplot2::flipped_names(params$flipped_aes)$x}} is below than 2."  # nolint
                 )
             )
         }
@@ -78,7 +124,6 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
         if (length(msg)) {
             cli::cli_inform("{.fn stat_comparetest} using {msg}")
         }
-
         params
     },
     extra_params = c("na.rm", "orientation"),
@@ -97,6 +142,12 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
                              flipped_aes = FALSE) {
         data <- ggplot2::flip_data(data, flipped_aes)
         scales <- ggplot2::flip_data(scales, flipped_aes)
+        if (!scales$x$is_discrete()) {
+            cli::cli_warn(c(
+                "Continuous {.field {ggplot2::flipped_names(params$flipped_aes)$x}} aesthetic",
+                "!" = "{.fn stat_comparetest} will always regard {.field {ggplot2::flipped_names(params$flipped_aes)$x}} as a discrete variable" # nolint
+            ))
+        }
         unique_values <- unclass(unique(data$x))
         unique_numbers <- length(unique_values)
 
@@ -138,7 +189,11 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
             tibble::tibble(
                 xmin = h_segments[[1L]],
                 xmax = h_segments[[2L]],
-                y = max(tip$y),
+                # Since the horizontal segments will span across xmin:xmax
+                # the y value should be maximal y among xmin:xmax
+                y = max(
+                    unname(x_to_maxy[as.character(xmin:xmax)])
+                ), 
                 tip = list(tip)
             )
         })
@@ -176,6 +231,8 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
                 }
                 method <- rlang::as_function(method)
                 test_data <- data[data$x %in% comparison, ]
+                # no matter whether x is disrete scale or continuous scale
+                # just regard it as a disrete variable
                 test_data$x <- factor(test_data$x)
                 test_res <- rlang::inject(method(
                     formula = y ~ x,
@@ -193,9 +250,8 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
         )
         stat_data$flipped_aes <- flipped_aes
         ggplot2::flip_data(
-            stat_data[order(stat_data$y), ], 
+            stat_data[order(stat_data$y), ],
             flipped_aes
         )
-    },
-    required_aes = c("x", "y")
+    }
 )

@@ -20,15 +20,15 @@ is_rel <- function(x) inherits(x, "rel")
 #' @noRd
 #'
 rename <- function(x, replace) {
-  current_names <- names(x)
-  old_names <- names(replace)
-  missing_names <- setdiff(old_names, current_names)
-  if (length(missing_names) > 0) {
-    replace <- replace[!old_names %in% missing_names]
+    current_names <- names(x)
     old_names <- names(replace)
-  }
-  names(x)[match(old_names, current_names)] <- as.vector(replace)
-  x
+    missing_names <- setdiff(old_names, current_names)
+    if (length(missing_names) > 0) {
+        replace <- replace[!old_names %in% missing_names]
+        old_names <- names(replace)
+    }
+    names(x)[match(old_names, current_names)] <- as.vector(replace)
+    x
 }
 
 # Use chartr() for safety since toupper() fails to convert i to I in Turkish locale
@@ -67,4 +67,12 @@ x_aes <- c(
 y_aes <- c(
     "y", "ymin", "ymax", "yend", "yintercept",
     "ymin_final", "ymax_final", "lower", "middle", "upper", "y0"
+)
+
+all_aesthetics <- c(
+    "adj", "alpha", "angle", "bg", "cex", "col", "color",
+    "colour", "fg", "fill", "group", "hjust", "label", "linetype", "lower",
+    "lty", "lwd", "max", "middle", "min", "pch", "radius", "sample", "shape",
+    "size", "srt", "upper", "vjust", "weight", "width", "x", "xend", "xmax",
+    "xmin", "xintercept", "y", "yend", "ymax", "ymin", "yintercept", "z"
 )
