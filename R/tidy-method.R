@@ -11,6 +11,7 @@ annotest_tidy_fn <- function(method) {
                 collapse = "\n"
             )
         },
+        chisq.test = ,
         t.test = ,
         kruskal.test = ,
         wilcox.test = function(x) {
