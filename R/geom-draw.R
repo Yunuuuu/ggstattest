@@ -9,10 +9,7 @@
 #'   scales. \cr \cr It is important to note that the columns names for the data
 #'   and coords come from the aesthetic mappings in the \code{ggplot2} plot.
 #' @inheritParams ggplot2::layer
-#' @param ... Other arguments passed on to [ggplot2::layer()]. These are often
-#'   aesthetics, used to set an aesthetic to a fixed value, like `colour =
-#'   "red"` or `size = 3`. They may also be parameters to the paired geom/stat.
-#'   Other arguments of function `draw` can be passed here.
+#' @inheritParams geom_comparetest
 #' @return a ggplot2 layer object
 #' @details If you want to combine the functionality of multiple geoms it can
 #'   usually be achieved by preparing the data for each of the geoms inside the
@@ -57,6 +54,7 @@ geom_draw <- function(draw = grid::nullGrob(),
 #' @rdname ggplot2-ggproto
 #' @format NULL
 #' @usage NULL
+#' @aliases GeomDraw
 #' @export
 GeomDraw <- ggplot2::ggproto(
     "GeomDraw", ggplot2::Geom,

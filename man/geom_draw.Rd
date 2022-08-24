@@ -55,8 +55,15 @@ position adjustment function. Use the latter if you need to change the
 settings of the adjustment.}
 
 \item{...}{Other arguments passed on to \code{\link[ggplot2:layer]{ggplot2::layer()}}. These are often
-aesthetics, used to set an aesthetic to a fixed value, like \code{colour = "red"} or \code{size = 3}. They may also be parameters to the paired geom/stat.
-Other arguments of function \code{draw} can be passed here.}
+aesthetics, used to set an aesthetic to a fixed value, like \code{colour = "red"} or \code{size = 3}. They may also be parameters to the paired geom/stat.}
+
+\item{na.rm}{If \code{FALSE} (the default), removes missing values with a warning.
+If \code{TRUE} silently removes missing values.}
+
+\item{orientation}{The orientation of the layer. The default (‘NA’)
+automatically determines the orientation from the aesthetic mapping.
+In the rare event that this fails it can be given explicitly by setting
+'orientation' to either "x" or "y"}
 
 \item{inherit.aes}{If \code{FALSE}, overrides the default aesthetics,
 rather than combining with them. This is most useful for helper functions

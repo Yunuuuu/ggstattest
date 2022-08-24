@@ -63,6 +63,11 @@ the plot data. The return value must be a \code{data.frame}, and
 will be used as the layer data. A \code{function} can be created
 from a \code{formula} (e.g. \code{~ head(.x, 10)}).}
 
+\item{stat}{The statistical transformation to use on the data for this
+layer, either as a \code{ggproto} \code{Geom} subclass or as a string naming the
+stat stripped of the \code{stat_} prefix (e.g. \code{"count"} rather than
+\code{"stat_count"})}
+
 \item{position}{Position adjustment, either as a string naming the adjustment
 (e.g. \code{"jitter"} to use \code{position_jitter}), or the result of a call to a
 position adjustment function. Use the latter if you need to change the
@@ -78,10 +83,8 @@ values as the fraction of maximal height .}
 \item{tip_length}{numeric vector indicating the length of the beard, use
 \link[ggplot2:element]{rel} to signal values as the fraction of the maximal height}
 
-\item{...}{Other arguments passed on to \code{\link[ggplot2:layer]{layer()}}. These are
-often aesthetics, used to set an aesthetic to a fixed value, like
-\code{colour = "red"} or \code{size = 3}. They may also be parameters
-to the paired geom/stat.}
+\item{...}{Other arguments passed on to \code{\link[ggplot2:layer]{ggplot2::layer()}}. These are often
+aesthetics, used to set an aesthetic to a fixed value, like \code{colour = "red"} or \code{size = 3}. They may also be parameters to the paired geom/stat.}
 
 \item{nudge_x, nudge_y}{Horizontal and vertical adjustment to nudge labels by.}
 
@@ -125,7 +128,8 @@ also be "none" indicates no test will be implemented.}
 entries in the vector are the values on the x-axis indicating the comparison
 among what groups.}
 
-\item{method_args}{arguments passed to function specified in \strong{method}.}
+\item{method_args}{other arguments passed to function specified in
+\strong{method}.}
 
 \item{tidy_fn}{A function or formula which accepts results returned by
 function in \strong{method} and return a scalar character.
@@ -172,3 +176,33 @@ the y value}
 }
 }
 
+\examples{
+\dontrun{
+library(ggplot2)
+library(ggstattest)
+ggplot(mpg, aes(class, hwy)) +
+    geom_boxplot() +
+    geom_comparetest()
+ggplot(mpg, aes(class, hwy)) +
+    geom_boxplot() +
+    geom_comparetest(
+        compare_list = list(
+            c("compact", "pickup"),
+            c("subcompact", "suv")
+        )
+    )
+ggplot(mpg, aes(class, hwy)) +
+    geom_boxplot() +
+    geom_comparetest(
+        aes(xmin = xmin, xmax = xmax, y = y, label = label),
+        stat = "identity",
+        data = data.frame(
+            y = c(30, 40),
+            xmin = c(4, 1),
+            xmax = c(5, 3),
+            label = c("**", "*")
+        ),
+        inherit.aes = FALSE
+    )
+}
+}

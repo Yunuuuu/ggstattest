@@ -5,7 +5,8 @@
 #' @param compare_list A list of atomic vectors with at least 2 length. The
 #' entries in the vector are the values on the x-axis indicating the comparison
 #' among what groups.
-#' @param method_args arguments passed to function specified in **method**.
+#' @param method_args other arguments passed to function specified in
+#' **method**.
 #' @param tidy_fn A function or formula which accepts results returned by
 #' function in **method** and return a scalar character.
 #'

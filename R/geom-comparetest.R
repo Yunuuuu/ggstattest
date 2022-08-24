@@ -21,16 +21,17 @@
 #' automatically determines the orientation from the aesthetic mapping.
 #' In the rare event that this fails it can be given explicitly by setting
 #' 'orientation' to either "x" or "y"
-#'
+#' @param ... Other arguments passed on to [ggplot2::layer()]. These are often
+#'   aesthetics, used to set an aesthetic to a fixed value, like `colour =
+#'   "red"` or `size = 3`. They may also be parameters to the paired geom/stat.
+#' @inheritParams ggplot2::layer
 #' @examples
 #' \dontrun{
 #' library(ggplot2)
 #' library(ggstattest)
-#'
 #' ggplot(mpg, aes(class, hwy)) +
 #'     geom_boxplot() +
 #'     geom_comparetest()
-#'
 #' ggplot(mpg, aes(class, hwy)) +
 #'     geom_boxplot() +
 #'     geom_comparetest(
@@ -39,7 +40,6 @@
 #'             c("subcompact", "suv")
 #'         )
 #'     )
-#'
 #' ggplot(mpg, aes(class, hwy)) +
 #'     geom_boxplot() +
 #'     geom_comparetest(
@@ -53,7 +53,7 @@
 #'         ),
 #'         inherit.aes = FALSE
 #'     )
-#'
+#' }
 #' @export
 #' @rdname geom_comparetest
 geom_comparetest <- function(mapping = NULL, data = NULL,
@@ -97,6 +97,7 @@ geom_comparetest <- function(mapping = NULL, data = NULL,
 #' @rdname ggplot2-ggproto
 #' @format NULL
 #' @usage NULL
+#' @aliases GeomComparetest
 #' @export
 GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
     required_aes = c("xmin|ymin", "xmax|ymax", "y|x", "label"),
@@ -208,11 +209,13 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
             # `xend` of horizontal lines
             vertical_seg$tip <- lapply(
                 seq_len(nrow(horizontal_seg)), function(i) {
-                     tibble::tibble(
-                         x = c(horizontal_seg$x[[i]], 
-                               horizontal_seg$xend[[i]]),
-                         y = rep(horizontal_seg$yend[[i]], times = 2L)
-                     )
+                    tibble::tibble(
+                        x = c(
+                            horizontal_seg$x[[i]],
+                            horizontal_seg$xend[[i]]
+                        ),
+                        y = rep(horizontal_seg$yend[[i]], times = 2L)
+                    )
                 }
             )
         } else {
