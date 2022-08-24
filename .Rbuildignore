@@ -3,3 +3,6 @@
 ^\.gitignore$
 ^Scratch\.RConsole$
 ^\.Rhistory$
+^LICENSE\.md$
+^.*\.Rproj$
+^\.Rproj\.user$
