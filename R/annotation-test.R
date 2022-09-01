@@ -5,7 +5,8 @@
 #' @param mapping Set of aesthetic mappings created by [aes()]. If specified and
 #'   `inherit.aes = TRUE` (the default), it is combined with the default mapping
 #'   at the top level of the plot. You must supply `mapping` if there is no plot
-#'   mapping. This is just for statistical test but not for plot.
+#'   mapping. This is not the same with other `ggplot2` geoms, which is just for
+#'   statistical test but not for plot.
 #' @param data The data to be displayed in this layer. There are three
 #'    options:
 #'
@@ -52,7 +53,6 @@
 #'   warning. If `TRUE`, missing values are silently removed.
 #' @inheritParams ggplot2::layer
 #' @inheritParams geom_comparetest
-#' @export
 #' @export
 #' @rdname annotation_test
 annotation_test <- function(mapping = NULL, data = NULL,

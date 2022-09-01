@@ -28,7 +28,8 @@ annotation_test(
 \item{mapping}{Set of aesthetic mappings created by \code{\link[=aes]{aes()}}. If specified and
 \code{inherit.aes = TRUE} (the default), it is combined with the default mapping
 at the top level of the plot. You must supply \code{mapping} if there is no plot
-mapping. This is just for statistical test but not for plot.}
+mapping. This is not the same with other \code{ggplot2} geoms, which is just for
+statistical test but not for plot.}
 
 \item{data}{The data to be displayed in this layer. There are three
 options:
