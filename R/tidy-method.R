@@ -23,7 +23,7 @@ annotest_tidy_fn <- function(method) {
             )
         },
         function(x) {
-            paste("Pvalue", sprintf("%.2g", x), sep = ": ")
+            paste("Pvalue", sprintf("%.2g", x$p.value), sep = ": ")
         }
     )
 }
