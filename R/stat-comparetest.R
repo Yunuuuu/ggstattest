@@ -103,7 +103,7 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
 
         if (identical(params$method, "none") && is.list(params$tidy_fn)) {
             if (!identical(length(params$tidy_fn), length(unique(data$PANEL)))) {
-                rlang::abort(
+                cli::cli_abort(
                     "{.arg tidy_fn} should be a list with the same number ({length(unique(data$PANEL))}) of {.field PANEL}" # nolint
                 )
             }
