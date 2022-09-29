@@ -32,6 +32,7 @@ stat_comparetest(
   data = NULL,
   method = NULL,
   compare_list = NULL,
+  hide_ns = NULL,
   method_args = NULL,
   tidy_fn = NULL,
   geom = "comparetest",
@@ -128,8 +129,13 @@ also be "none" indicates no test will be implemented.}
 entries in the vector are the values on the x-axis indicating the comparison
 among what groups.}
 
+\item{hide_ns}{logical value or a function (can be purrr-style) which take
+statistical result as an argument and return a logical value indicating
+whether hide this result. If TRUE, hide ns symbol when displaying
+significance levels.}
+
 \item{method_args}{other arguments passed to function specified in
-\strong{method}.}
+\code{method}.}
 
 \item{tidy_fn}{A function or formula which accepts results returned by
 function in \strong{method} and return a scalar character.

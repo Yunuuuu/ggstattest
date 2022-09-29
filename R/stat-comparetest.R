@@ -5,8 +5,12 @@
 #' @param compare_list A list of atomic vectors with at least 2 length. The
 #' entries in the vector are the values on the x-axis indicating the comparison
 #' among what groups.
+#' @param hide_ns logical value or a function (can be purrr-style) which take
+#' statistical result as an argument and return a logical value indicating
+#' whether hide this result. If TRUE, hide ns symbol when displaying
+#' significance levels. 
 #' @param method_args other arguments passed to function specified in
-#' **method**.
+#' `method`.
 #' @param tidy_fn A function or formula which accepts results returned by
 #' function in **method** and return a scalar character.
 #'
@@ -32,9 +36,9 @@
 #'   segments underneath label}
 #'   \item{xmax *or* ymax}{the right (or upper) side of horizontal (or vertical)
 #'   segments underneath label}
-#'   \item{x *or* y}{the x (or y) coordinates for labels, usually equal to 
+#'   \item{x *or* y}{the x (or y) coordinates for labels, usually equal to
 #'   (xmin + xmax) / 2 or (ymin + ymax) / 2}
-#'   \item{y *or* x}{the y (or x) coordinates for labels, usually equal to 
+#'   \item{y *or* x}{the y (or x) coordinates for labels, usually equal to
 #'   (ymin + ymax) / 2 or (xmin + xmax) / 2}
 #'   \item{label}{the statistical test results}
 #'   \item{tip}{a list of data.frame gives the coordinates of tip where x
@@ -43,9 +47,9 @@
 #'   the y value}
 #' }
 #' @rdname geom_comparetest
-#' @export 
+#' @export
 stat_comparetest <- function(mapping = NULL, data = NULL, method = NULL,
-                             compare_list = NULL,
+                             compare_list = NULL, hide_ns = NULL,
                              method_args = NULL, tidy_fn = NULL,
                              geom = "comparetest", position = "identity",
                              na.rm = FALSE, show.legend = NA,
@@ -56,6 +60,7 @@ stat_comparetest <- function(mapping = NULL, data = NULL, method = NULL,
         inherit.aes = inherit.aes,
         params = rlang::list2(
             method = method,
+            hide_ns = hide_ns,
             compare_list = compare_list,
             method_args = method_args,
             tidy_fn = tidy_fn,
@@ -86,6 +91,14 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
         }
 
         msg <- character()
+        if (is.null(params$hide_ns)) {
+            if (is.null(params$method) || identical(params$method, "auto")) {
+                params$hide_ns <- TRUE
+            } else {
+                params$hide_ns <- FALSE
+            }
+            msg <- c(msg, paste0("hide_ns = \"", params$hide_ns, "\""))
+        } 
         # check method and tidy_fn
         if (is.null(params$method) || identical(params$method, "auto")) {
             params$method <- "nonparametric"
@@ -116,7 +129,7 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
             cli::cli_warn(
                 c(
                     "Cannot implment statistical test.",
-                    "!" = "the number of unique values in {.field {ggplot2::flipped_names(params$flipped_aes)$x}} is below than 2."  # nolint
+                    "!" = "the number of unique values in {.field {ggplot2::flipped_names(params$flipped_aes)$x}} is below than 2." # nolint
                 )
             )
         }
@@ -137,7 +150,7 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
         )
         data
     },
-    compute_panel = function(data, scales, method = NULL,
+    compute_panel = function(data, scales, method = NULL, hide_ns,
                              compare_list = NULL, method_args = list(),
                              tidy_fn = NULL, na.rm = FALSE,
                              flipped_aes = FALSE) {
@@ -194,7 +207,7 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
                 # the y value should be maximal y among xmin:xmax
                 y = max(
                     unname(x_to_maxy[as.character(xmin:xmax)])
-                ), 
+                ),
                 tip = list(tip)
             )
         })
@@ -240,6 +253,15 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
                     data = test_data,
                     !!!method_args
                 ))
+                if (is.logical(hide_ns) && isTRUE(hide_ns)) {
+                    if (!is.null(test_res$p.value) && test_res$p.value > 0.05) {
+                        return(".hide.")
+                    } 
+                } else if (!is.logical(hide_ns)) {
+                    if (rlang::as_function(hide_ns)(test_res)) {
+                        return(".hide.")
+                    }
+                }
                 as.character(rlang::as_function(tidy_fn)(test_res))
             }, character(1L))
         }

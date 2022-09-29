@@ -149,6 +149,7 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         # one for label: c(x, y, label)
         # Another for label horizontal segments - c(xmin, xmax, y0, y0)
         data <- ggplot2::flip_data(data, params$flipped_aes)
+        data <- data[data$label != ".hide.", , drop = FALSE]
         if (is.null(data$x)) {
             data$x <- (data$xmin + data$xmax) / 2L
         }
