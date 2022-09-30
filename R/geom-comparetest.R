@@ -60,7 +60,7 @@ geom_comparetest <- function(mapping = NULL, data = NULL,
                              stat = "comparetest", position = "identity",
                              height = ggplot2::rel(0.05),
                              step_increase = 1,
-                             tip_length = ggplot2::rel(0.01),
+                             tip_length = 1,
                              ..., nudge_x = NULL, nudge_y = NULL,
                              parse = FALSE, arrow = NULL, arrow_fill = NULL,
                              lineend = "butt", linejoin = "round",
@@ -242,7 +242,6 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
             horizontal_seg[seg_columns],
             vertical_seg[seg_columns]
         )
-        # browser()
         label_data <- ggplot2::flip_data(label_data, flipped_aes)
         seg_data <- ggplot2::flip_data(seg_data, flipped_aes)
 

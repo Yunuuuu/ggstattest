@@ -39,12 +39,12 @@
 #'   \item{x *or* y}{the x (or y) coordinates for labels, usually equal to
 #'   (xmin + xmax) / 2 or (ymin + ymax) / 2}
 #'   \item{y *or* x}{the y (or x) coordinates for labels, usually equal to
-#'   (ymin + ymax) / 2 or (xmin + xmax) / 2}
+#'   the max y-axis (x-axis) value span from xmin (ymin) to xmax (ymax)}
 #'   \item{label}{the statistical test results}
 #'   \item{tip}{a list of data.frame gives the coordinates of tip where x
 #'   corresponds to the x axis of current comparison group, and y corresponds to
-#'   the maximal values of current comparison group the tip length is reverse to
-#'   the y value}
+#'   the maximal values of current comparison group. the tip length is reverse
+#'   to the y value}
 #' }
 #' @rdname geom_comparetest
 #' @export
