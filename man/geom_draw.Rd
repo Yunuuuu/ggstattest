@@ -17,12 +17,14 @@ geom_draw(
 )
 }
 \arguments{
-\item{draw}{Either a \link[grid:grid.grob]{grob} object or a function which accepts
-two arguments (\code{data} and \code{coords}) and returns a
-\link[grid:grid.grob]{grob}. \cr \cr \code{data} contains value from parameter
-\code{data}, coords is value that have already been transformed to the plot
-scales. \cr \cr It is important to note that the columns names for the data
-and coords come from the aesthetic mappings in the \code{ggplot2} plot.}
+\item{draw}{Either a \link[grid:grid.grob]{grob} object or a function (can be
+purrr-style) which accepts two arguments (\code{data} and \code{coords})
+and returns a \link[grid:grid.grob]{grob}.
+
+\cr \cr when \code{draw} is a function, it is used as the \code{draw_group} function
+in a \link[ggplot2:ggplot2-ggproto]{Geom} \code{ggproto} object. So One should always call
+\code{coord$transform(data, panel_params)} in function \code{draw} to get transformed
+data in the plot scales.}
 
 \item{mapping}{Set of aesthetic mappings created by \code{\link[ggplot2:aes]{aes()}}. If specified and
 \code{inherit.aes = TRUE} (the default), it is combined with the default mapping
@@ -94,4 +96,7 @@ ggdraw_text <- grid::textGrob(
 )
 ggplot2::ggplot(data.frame(x = 1, y = 2)) +
     geom_draw(ggdraw_text)
+}
+\seealso{
+\url{https://ggplot2.tidyverse.org/reference/ggplot2-ggproto.html}
 }

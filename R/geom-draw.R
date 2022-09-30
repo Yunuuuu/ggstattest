@@ -2,12 +2,14 @@
 #'
 #' Draw ggplot2 layer with a grod or function.
 #'
-#' @param draw Either a [grob][grid::grob] object or a function which accepts
-#'   two arguments (\code{data} and \code{coords}) and returns a
-#'   [grob][grid::grob]. \cr \cr \code{data} contains value from parameter
-#'   \code{data}, coords is value that have already been transformed to the plot
-#'   scales. \cr \cr It is important to note that the columns names for the data
-#'   and coords come from the aesthetic mappings in the \code{ggplot2} plot.
+#' @param draw Either a [grob][grid::grob] object or a function (can be
+#'   purrr-style) which accepts two arguments (\code{data} and \code{coords})
+#'   and returns a [grob][grid::grob]. 
+#' 
+#'   \cr \cr when `draw` is a function, it is used as the `draw_group` function
+#'   in a [Geom][ggplot2::Geom] `ggproto` object. So One should always call
+#'   `coord$transform(data, panel_params)` in function `draw` to get transformed
+#'   data in the plot scales.
 #' @inheritParams ggplot2::layer
 #' @inheritParams geom_comparetest
 #' @return a ggplot2 layer object
@@ -17,6 +19,7 @@
 #'   output in a [`grid::gList`] (a list of grobs) if the call is `draw_group()`
 #'   or a [`grid::gTree`] (a grob containing multiple children grobs) if the
 #'   call is `draw_panel()`.
+#' @seealso <https://ggplot2.tidyverse.org/reference/ggplot2-ggproto.html>
 #' @examples
 #' ggdraw_text <- grid::textGrob(
 #'     "ggdraw",
