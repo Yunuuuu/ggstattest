@@ -131,8 +131,8 @@ among what groups.}
 
 \item{hide_ns}{logical value or a function (can be purrr-style) which take
 statistical result as an argument and return a logical value indicating
-whether hide this result. If TRUE, hide ns symbol when displaying
-significance levels.}
+whether hide this result. If TRUE, this will flag label with a ".hide." and
+\code{geom_comparetest} will remove rows with \code{.hide.}.}
 
 \item{method_args}{other arguments passed to function specified in
 \code{method}.}
