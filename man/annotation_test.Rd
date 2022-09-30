@@ -18,7 +18,7 @@ annotation_test(
   ...,
   angle = 0,
   units = "npc",
-  text_gp = NULL,
+  label_gp = NULL,
   na.rm = FALSE,
   orientation = NA,
   inherit.aes = TRUE
@@ -80,11 +80,10 @@ aesthetics, used to set an aesthetic to a fixed value, like \code{colour = "red"
 
 \item{angle}{The angle to rotate the text.}
 
-\item{units}{A string indicating the default units to use if x or y are only
-given as numeric vectors.}
+\item{units}{A string indicating the default units \code{labelx} and \code{label_y}
+use.}
 
-\item{text_gp}{other arguments passed to \link[grid:gpar]{grid::gpar} to define
-the text attributes.}
+\item{label_gp}{other arguments to define the text attributes.}
 
 \item{na.rm}{If \code{FALSE}, the default, missing values are removed with a
 warning. If \code{TRUE}, missing values are silently removed.}

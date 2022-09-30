@@ -45,10 +45,9 @@
 #'
 #'   If a **string**, the function is looked up in `globalenv()`.
 #' @param angle The angle to rotate the text.
-#' @param units A string indicating the default units to use if x or y are only
-#' given as numeric vectors.
-#' @param text_gp other arguments passed to [grid::gpar][grid::gpar] to define
-#' the text attributes.
+#' @param units A string indicating the default units `labelx` and `label_y`
+#' use.
+#' @param label_gp other arguments to define the text attributes.
 #' @param na.rm If `FALSE`, the default, missing values are removed with a
 #'   warning. If `TRUE`, missing values are silently removed.
 #' @inheritParams ggplot2::layer
@@ -60,7 +59,7 @@ annotation_test <- function(mapping = NULL, data = NULL,
                             label_x, label_y, hjust = 0.5, vjust = 0.5,
                             method_args = NULL, tidy_fn = NULL,
                             ..., angle = 0,
-                            units = "npc", text_gp = NULL,
+                            units = "npc", label_gp = NULL,
                             na.rm = FALSE,
                             orientation = NA,
                             inherit.aes = TRUE) {
@@ -79,7 +78,7 @@ annotation_test <- function(mapping = NULL, data = NULL,
             method_args = method_args,
             tidy_fn = tidy_fn,
             hjust = hjust, vjust = vjust, angle = angle,
-            units = units, text_gp = text_gp,
+            units = units, label_gp = label_gp,
             na.rm = na.rm,
             orientation = orientation,
             ...
@@ -97,8 +96,8 @@ GeomAnnotest <- ggplot2::ggproto("GeomAnnotest", ggplot2::Geom,
             data, params,
             ambiguous = TRUE
         )
-        if (is.null(params$text_gp)) {
-            params$text_gp <- list(
+        if (is.null(params$label_gp)) {
+            params$label_gp <- list(
                 colour = "black", size = 3.88,
                 alpha = NA, family = "", fontface = 1,
                 lineheight = 1.2
@@ -112,7 +111,7 @@ GeomAnnotest <- ggplot2::ggproto("GeomAnnotest", ggplot2::Geom,
     },
     required_aes = c("label_x", "label_y", "label"),
     draw_panel = function(data, panel_params, coord, hjust, vjust,
-                          angle, text_gp, units = "npc",
+                          angle, label_gp, units = "npc",
                           na.rm, flipped_aes = FALSE) {
         grid::textGrob(
             label = data$label,
@@ -123,11 +122,11 @@ GeomAnnotest <- ggplot2::ggproto("GeomAnnotest", ggplot2::Geom,
             vjust = vjust,
             rot = angle,
             gp = grid::gpar(
-                col = scales::alpha(text_gp$colour, text_gp$alpha),
-                fontsize = text_gp$size * ggplot2::.pt,
-                fontfamily = text_gp$family,
-                fontface = text_gp$fontface,
-                lineheight = text_gp$lineheight
+                col = scales::alpha(label_gp$colour, label_gp$alpha),
+                fontsize = label_gp$size * ggplot2::.pt,
+                fontfamily = label_gp$family,
+                fontface = label_gp$fontface,
+                lineheight = label_gp$lineheight
             ),
             check.overlap = FALSE
         )
@@ -234,15 +233,15 @@ StatAnnotest <- ggplot2::ggproto("StatAnnotest", ggplot2::Stat,
             data = data,
             !!!method_args
         ))
-        stat_res <- as.character(tidy_fn(stat_res))
-        if (!identical(length(stat_res), 1L)) {
+        label <- as.character(tidy_fn(stat_res))
+        if (!identical(length(label), 1L)) {
             cli::cli_abort(
-                "Function {.arg tidy_fn} should return a length one value"
+                "Function {.arg tidy_fn} should return a length one value."
             )
         }
         # keep xmin, xmax, ymin and ymax to help scale train data ranges
         tibble::tibble(
-            label = stat_res,
+            label = label,
             label_x = label_x,
             label_y = label_y,
             xmin = scales$x$range$range[[1L]],
