@@ -1,8 +1,11 @@
+#' @export
+ggplot2::rel
+
+is_rel <- function(x) inherits(x, "rel")
+
 "%||%" <- function(a, b) {
     if (!is.null(a)) a else b
 }
-
-is_rel <- function(x) inherits(x, "rel")
 
 #' Rename elements in a list, data.frame or vector
 #'
@@ -18,7 +21,6 @@ is_rel <- function(x) inherits(x, "rel")
 #'
 #' @keywords internal
 #' @noRd
-#'
 rename <- function(x, replace) {
     current_names <- names(x)
     old_names <- names(replace)
