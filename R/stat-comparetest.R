@@ -129,7 +129,7 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
             cli::cli_warn(
                 c(
                     "Cannot implment statistical test.",
-                    "!" = "the number of unique values in {.field {ggplot2::flipped_names(params$flipped_aes)$x}} is below than 2." # nolint
+                    "!" = "the number of unique values in {.field {ggplot2::flipped_names(params$flipped_aes)$x}} is less than 2." # nolint
                 )
             )
         }
