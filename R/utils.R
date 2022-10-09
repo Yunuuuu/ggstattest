@@ -1,3 +1,4 @@
+#' @importFrom ggplot2 rel
 #' @export
 ggplot2::rel
 
