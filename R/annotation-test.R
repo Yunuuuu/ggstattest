@@ -178,6 +178,14 @@ StatAnnotest <- ggplot2::ggproto("StatAnnotest", ggplot2::Stat,
         )
         data
     },
+    optional_aes = c(
+        "adj", "alpha", "angle", "bg", "cex", "col", "color",
+        "colour", "fg", "fill", "group", "hjust", "label", "linetype", "lower",
+        "lty", "lwd", "max", "middle", "min", "pch", "radius", "sample",
+        "shape", "size", "srt", "upper", "vjust", "weight", "width", "x",
+        "xend", "xmax", "xmin", "xintercept", "y", "yend", "ymax", "ymin",
+        "yintercept", "z"
+    ),
     compute_panel = function(data, scales, method = NULL, formula,
                              method_args = list(), tidy_fn = NULL,
                              label_x, label_y,
