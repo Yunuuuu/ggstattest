@@ -8,6 +8,15 @@ is_rel <- function(x) inherits(x, "rel")
     if (!is.null(a)) a else b
 }
 
+has_name <- function(x) {
+    nms <- names(x)
+    if (is.null(nms)) {
+        return(rep(FALSE, length(x)))
+    }
+
+    !is.na(nms) & nms != ""
+}
+
 #' Rename elements in a list, data.frame or vector
 #'
 #' This is akin to `dplyr::rename` and `plyr::rename`. It renames elements given

@@ -96,11 +96,20 @@ GeomAnnotest <- ggplot2::ggproto("GeomAnnotest", ggplot2::Geom,
             data, params,
             ambiguous = TRUE
         )
+        label_gp <- list(
+            colour = "black", size = 3.88,
+            alpha = NA, family = "", fontface = 1,
+            lineheight = 1.2
+        )
         if (is.null(params$label_gp)) {
-            params$label_gp <- list(
-                colour = "black", size = 3.88,
-                alpha = NA, family = "", fontface = 1,
-                lineheight = 1.2
+            params$label_gp <- label_gp
+        } else {
+            params$label_gp <- params$label_gp[
+                has_name(params$label_gp)
+            ]
+            params$label_gp <- c(
+                params$label_gp,
+                label_gp[setdiff(names(label_gp), names(params$label_gp))]
             )
         }
         params
@@ -109,7 +118,6 @@ GeomAnnotest <- ggplot2::ggproto("GeomAnnotest", ggplot2::Geom,
     draw_key = function(...) {
         ggplot2::zeroGrob()
     },
-    required_aes = c("label_x", "label_y", "label"),
     draw_panel = function(data, panel_params, coord, hjust, vjust,
                           angle, label_gp, units = "npc",
                           na.rm, flipped_aes = FALSE) {
@@ -178,12 +186,12 @@ StatAnnotest <- ggplot2::ggproto("StatAnnotest", ggplot2::Stat,
         # set defaul value for method and tidy_fn
         rhs_symbols <- get_formula_symbols(rlang::f_rhs(formula))
         lhs_symbols <- get_formula_symbols(rlang::f_lhs(formula))
-        if (scales$x$is_discrete() && is.numeric(data$y)) {
-            data$x <- factor(data$x)
-        }
-        if (scales$y$is_discrete() && is.numeric(data$y)) {
-            data$y <- factor(data$y)
-        }
+        # if (scales$x$is_discrete() && is.numeric(data$y)) {
+        #     data$x <- factor(data$x)
+        # }
+        # if (scales$y$is_discrete() && is.numeric(data$y)) {
+        #     data$y <- factor(data$y)
+        # }
         if (is.null(method)) {
             if (identical(length(lhs_symbols), 1L)) {
                 if (!aes_is_discrete(data, scales, lhs_symbols)) {
@@ -201,15 +209,7 @@ StatAnnotest <- ggplot2::ggproto("StatAnnotest", ggplot2::Stat,
                         method <- "lm"
                     }
                 } else {
-                    if (identical(length(rhs_symbols), 1L)) {
-                        if (aes_is_discrete(data, scales, rhs_symbols)) {
-                            "chisq.test"
-                        } else {
-                            method <- "glm"
-                        }
-                    } else if (length(rhs_symbols) > 1L) {
-                        method <- "glm"
-                    }
+                    method <- "glm"
                 }
             }
             if (is.null(method)) {
@@ -243,11 +243,7 @@ StatAnnotest <- ggplot2::ggproto("StatAnnotest", ggplot2::Stat,
         tibble::tibble(
             label = label,
             label_x = label_x,
-            label_y = label_y,
-            xmin = scales$x$range$range[[1L]],
-            xmax = scales$x$range$range[[2L]],
-            ymin = scales$y$range$range[[1L]],
-            ymax = scales$y$range$range[[2L]]
+            label_y = label_y
         )
     }
 )
