@@ -105,10 +105,10 @@ GeomAnnotest <- ggplot2::ggproto("GeomAnnotest", ggplot2::Geom,
             params$label_gp <- label_gp
         } else {
             params$label_gp <- params$label_gp[
-                has_name(params$label_gp)
+                intersect(names(params$label_gp), names(label_gp))
             ]
             params$label_gp <- c(
-                params$label_gp,
+                as.list(params$label_gp),
                 label_gp[setdiff(names(label_gp), names(params$label_gp))]
             )
         }
