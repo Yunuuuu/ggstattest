@@ -158,9 +158,6 @@ StatAnnotest <- ggplot2::ggproto("StatAnnotest", ggplot2::Stat,
                 "Not all variables in {.arg formula = {params$formula}} exist in {.var data}}"
             )
         }
-        if (is.null(params$tidy_fn)) {
-            params$tidy_fn <- annotest_tidy_fn
-        }
         params
     },
     extra_params = c("na.rm", "orientation"),
@@ -219,8 +216,11 @@ StatAnnotest <- ggplot2::ggproto("StatAnnotest", ggplot2::Stat,
                 cli::cli_abort("A {.arg method} argument is needed.")
             }
         }
+        if (is.null(tidy_fn)) {
+            tidy_fn <- annotest_tidy_fn(method)
+        }
         if (is.null(method_args)) {
-            if (identical(method, "glm")) {
+            if (identical(method, "glm") || identical(method, stats::glm)) {
                 method_args <- list(
                     family = stats::binomial("logit")
                 )
