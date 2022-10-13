@@ -159,7 +159,7 @@ StatAnnotest <- ggplot2::ggproto("StatAnnotest", ggplot2::Stat,
             )
         }
         if (is.null(params$tidy_fn)) {
-            params$tidy_fn <- "annotest_tidy_fn"
+            params$tidy_fn <- annotest_tidy_fn
         }
         params
     },
