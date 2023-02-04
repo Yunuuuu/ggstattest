@@ -1,12 +1,15 @@
 #' Statistical Compare test
 #'
-#' @param height numeric vector indicating the value where label start. use
-#' [rel][ggplot2::rel] to signal values as the fraction of maximal height
-#' @param step_increase numeric vector indicating the increase for every
-#' additional comparison to minimize overlap, use [rel][ggplot2::rel] to signal
-#' values as the fraction of maximal height .
-#' @param tip_length numeric vector indicating the length of the beard, use
-#' [rel][ggplot2::rel] to signal values as the fraction of the maximal height
+#' @param height A list or a numeric vector with length `1` or PANEL number
+#' indicating the value where label start. use [rel][ggplot2::rel] to signal
+#' values as the fraction of maximal height. 
+#' @param step_increase A list or a numeric vector  with length `1` or PANEL
+#' number indicating the increase for every additional comparison to minimize
+#' overlap, use [rel][ggplot2::rel] to signal values as the fraction of maximal
+#' height .
+#' @param tip_length A list or a numeric vector  with length `1` or PANEL number
+#' indicating the length of the beard, use [rel][ggplot2::rel] to signal values
+#' as the fraction of the maximal height.
 #' @param nudge_x,nudge_y Horizontal and vertical adjustment to nudge labels by.
 #' @param parse If `TRUE`, the labels will be parsed into expressions and
 #'   displayed as described in `?plotmath`.
@@ -58,9 +61,9 @@
 #' @rdname geom_comparetest
 geom_comparetest <- function(mapping = NULL, data = NULL,
                              stat = "comparetest", position = "identity",
-                             height = ggplot2::rel(0.05),
-                             step_increase = 1,
-                             tip_length = 1,
+                             height = rel(0.05),
+                             step_increase = rel(0.2),
+                             tip_length = rel(0.05),
                              ..., nudge_x = NULL, nudge_y = NULL,
                              parse = FALSE, arrow = NULL, arrow_fill = NULL,
                              lineend = "butt", linejoin = "round",
@@ -120,17 +123,26 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
             data, params,
             main_is_continuous = FALSE
         )
-        if (is.null(params$baseline)) {
-            params$baseline <- max(
-                data[[ggplot2::flipped_names(params$flipped_aes)$y]]
-            )
-        }
         if (params$flipped_aes) {
             if (is.null(params$nudge_x)) params$nudge_x <- 0.05
             if (is.null(params$nudge_y)) params$nudge_y <- 0
         } else {
             if (is.null(params$nudge_x)) params$nudge_x <- 0
             if (is.null(params$nudge_y)) params$nudge_y <- 0.05
+        }
+        panel_number <- length(unique(data$PANEL))
+        fail_parms <- character()
+        for (i in c("height", "step_increase", "tip_length")) {
+            value <- params[[i]]
+            i_len <- length(value)
+            if (i_len == 1L) {
+                params[[i]] <- rep_len(list(value), panel_number)
+            } else if (i_len != panel_number) {
+                fail_parms <- c(fail_parms, i)
+            }
+        }
+        if (length(fail_parms)) {
+            cli::cli_abort("The length of {.arg {fail_parms}} must equal to 1L or the panel numbers ({.val {panel_number}})")
         }
         params
     },
@@ -149,18 +161,35 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         # one for label: c(x, y, label)
         # Another for label horizontal segments - c(xmin, xmax, y0, y0)
         data <- ggplot2::flip_data(data, params$flipped_aes)
-        data <- data[data$label != ".hide.", , drop = FALSE]
+        data <- ggplot2::remove_missing(
+            data,
+            vars = c("xmin", "xmax", "y", "label"),
+            na.rm = params$na.rm,
+            name = "geom_comparetest"
+        )
+        data <- data[data$label != "...hide...", , drop = FALSE]
         if (is.null(data$x)) {
             data$x <- (data$xmin + data$xmax) / 2L
         }
-        if (is_rel(height)) {
-            height <- params$baseline * unclass(height)
-        }
-        if (is_rel(step_increase)) {
-            step_increase <- params$baseline * unclass(step_increase)
-        }
-        step_increase <- (seq_len(nrow(data)) - 1L) * step_increase
-        data$y <- data$y + height + step_increase
+        # we should increase the segment y value in each panel individually
+        data <- unname(split(data, ~PANEL, drop = TRUE))
+        data <- lapply(seq_along(data), function(i) {
+            temp <- data[[i]]
+            baseline <- max(temp$y, na.rm = TRUE)
+            height <- height[[i]]
+            step_increase <- step_increase[[i]]
+            if (is_rel(height)) {
+                height <- baseline * unclass(height)
+            }
+            if (is_rel(step_increase)) {
+                step_increase <- baseline * unclass(step_increase)
+            }
+            step_increase <- (seq_len(nrow(temp)) - 1L) * step_increase
+            temp$y <- temp$y + height + step_increase
+            temp$baseline <- baseline
+            temp
+        })
+        data <- do.call("rbind", data)
         data$y0 <- data$y
         # y0 coordinate is for segments
         # nudge_x and nudge_y will nudge the coordinates of label but not the
@@ -174,9 +203,8 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
     draw_panel = function(data, panel_params, coord, height, step_increase,
                           tip_length, nudge_x = NULL, nudge_y = NULL,
                           parse = FALSE, arrow = NULL, arrow_fill = NULL,
-                          lineend = "butt", linejoin = "round", baseline,
+                          lineend = "butt", linejoin = "round",
                           na.rm, flipped_aes = FALSE) {
-        # browser()
         label_data <- ggplot2::flip_data(data, flipped_aes)
         # for horizontal segments data, yend should equal to `horizontal_seg$y0`
         # the same time, we should keep non-position aesthetic
@@ -191,46 +219,33 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
             horizontal_seg,
             c(xmin = "x", xmax = "xend", y0 = "y")
         )
-        # For vertical segments, `tip` gave the coordinates of the tip,
-        # where x corresponds to the x axis of current group,
-        # and y corresponds to the maximal values of current group
+
+        # For vertical segments, `tip` gave the x coordinates of the tip,
         # the tip length is reverse to the y value
 
         # since vertical segments will not exceed the corresponding horizontal
-        # segment, the yend should equal to `horizontal_seg$yend`, so the y
-        # should equal to `yend - tip_length`.
-        # c(x, yend - tip_length, x, yend)
-
+        # segment, the yend should equal to `y0`, so the y should equal to
+        # `yend - tip_length`.  c(x, yend - tip_length, x, yend)
+        tip_length <- tip_length[[data$PANEL[[1L]]]]
         # we keep all the non-position aesthetic
         vertical_seg <- label_data[
-            setdiff(names(label_data), c(x_aes, y_aes))
+            c("y0", setdiff(names(label_data), c(x_aes, y_aes)))
         ]
         if (is.null(vertical_seg$tip)) {
             # for NULL tip data, the tip should run vertically along the `x` and
             # `xend` of horizontal lines
             vertical_seg$tip <- lapply(
                 seq_len(nrow(horizontal_seg)), function(i) {
-                    tibble::tibble(
-                        x = c(
-                            horizontal_seg$x[[i]],
-                            horizontal_seg$xend[[i]]
-                        ),
-                        y = rep(horizontal_seg$yend[[i]], times = 2L)
-                    )
+                    c(horizontal_seg$x[[i]], horizontal_seg$xend[[i]])
                 }
             )
-        } else {
-            vertical_seg$tip <- lapply(
-                vertical_seg$tip, ggplot2::flip_data,
-                flipped_aes
-            )
         }
-        vertical_seg$yend <- horizontal_seg$yend
         vertical_seg <- tidyr::unnest(vertical_seg, all_of("tip"))
+        vertical_seg <- rename(vertical_seg, c(y0 = "yend", tip = "x"))
         vertical_seg$xend <- vertical_seg$x
         if (is_rel(tip_length)) {
             vertical_seg$y <- vertical_seg$yend - unclass(tip_length) *
-                baseline * baseline / vertical_seg$y
+                vertical_seg$baseline
         } else {
             vertical_seg$y <- vertical_seg$yend - tip_length
         }
@@ -248,6 +263,7 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         if (flipped_aes) {
             label_data$angle <- label_data$angle - 90
         }
+
         grid::gList(
             # draw label
             ggplot2::GeomText$draw_panel(

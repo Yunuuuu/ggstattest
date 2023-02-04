@@ -10,9 +10,9 @@ geom_comparetest(
   data = NULL,
   stat = "comparetest",
   position = "identity",
-  height = ggplot2::rel(0.05),
-  step_increase = 1,
-  tip_length = 1,
+  height = rel(0.05),
+  step_increase = rel(0.2),
+  tip_length = rel(0.05),
   ...,
   nudge_x = NULL,
   nudge_y = NULL,
@@ -74,15 +74,18 @@ stat stripped of the \code{stat_} prefix (e.g. \code{"count"} rather than
 position adjustment function. Use the latter if you need to change the
 settings of the adjustment.}
 
-\item{height}{numeric vector indicating the value where label start. use
-\link[ggplot2:element]{rel} to signal values as the fraction of maximal height}
+\item{height}{A list or a numeric vector with length \code{1} or PANEL number
+indicating the value where label start. use \link[ggplot2:element]{rel} to signal
+values as the fraction of maximal height.}
 
-\item{step_increase}{numeric vector indicating the increase for every
-additional comparison to minimize overlap, use \link[ggplot2:element]{rel} to signal
-values as the fraction of maximal height .}
+\item{step_increase}{A list or a numeric vector  with length \code{1} or PANEL
+number indicating the increase for every additional comparison to minimize
+overlap, use \link[ggplot2:element]{rel} to signal values as the fraction of maximal
+height .}
 
-\item{tip_length}{numeric vector indicating the length of the beard, use
-\link[ggplot2:element]{rel} to signal values as the fraction of the maximal height}
+\item{tip_length}{A list or a numeric vector  with length \code{1} or PANEL number
+indicating the length of the beard, use \link[ggplot2:element]{rel} to signal values
+as the fraction of the maximal height.}
 
 \item{...}{Other arguments passed on to \code{\link[ggplot2:layer]{ggplot2::layer()}}. These are often
 aesthetics, used to set an aesthetic to a fixed value, like \code{colour = "red"} or \code{size = 3}. They may also be parameters to the paired geom/stat.}
@@ -123,16 +126,21 @@ the default plot specification, e.g. \code{\link[ggplot2:borders]{borders()}}.}
 \item{method}{the method used to implement test. Defaults to "nonparametric",
 which will use "wilcox.test" to compare two groups and use "kruskal.test" to
 compare three or more groups. Support lamda created from a formula. This can
-also be "none" indicates no test will be implemented.}
+also be "none" indicates no test will be implemented. The method should
+always accept a \strong{formula} argument whose value will be set as \code{y ~ x}, the
+\code{x} is the discrete variable and the \code{y} is the continuous variable.}
 
-\item{compare_list}{A list of atomic vectors with at least 2 length. The
-entries in the vector are the values on the x-axis indicating the comparison
-among what groups.}
+\item{compare_list}{A list of atomic vectors with a length of at least 2. The
+entries in the vector are the values on the x-axis (or y-axis) indicating the
+comparison among what groups. the order will be regarded as the level of \code{x}
+variable.}
 
-\item{hide_ns}{logical value or a function (can be purrr-style) which take
+\item{hide_ns}{A logical value or a function (can be purrr-style) which take
 statistical result as an argument and return a logical value indicating
-whether hide this result. If TRUE, this will flag label with a ".hide." and
-\code{geom_comparetest} will remove rows with \code{.hide.}.}
+whether hide this result. If TRUE, this will flag the statistical result
+whose \code{p.value > 0.05} ("p.value" is obtained by stat_result$p.value, so
+ensure the results returned by \code{method} have a "p.value" item) with
+"...hide..." and \code{geom_comparetest} will remove rows with "...hide...".}
 
 \item{method_args}{other arguments passed to function specified in
 \code{method}.}
@@ -175,10 +183,9 @@ segments underneath label}
 \item{y \emph{or} x}{the y (or x) coordinates for labels, usually equal to
 the max y-axis (x-axis) value span from xmin (ymin) to xmax (ymax)}
 \item{label}{the statistical test results}
-\item{tip}{a list of data.frame gives the coordinates of tip where x
-corresponds to the x axis of current comparison group, and y corresponds to
-the maximal values of current comparison group. the tip length is reverse
-to the y value}
+\item{tip}{a list of numerical vector gives the x-axis (discrete position
+aesthetic) coordinates of tip, the tip will draw down the position.
+}
 }
 }
 
