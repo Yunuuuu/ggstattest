@@ -2,7 +2,7 @@
 #'
 #' @param height A list or a numeric vector with length `1` or PANEL number
 #' indicating the value where label start. use [rel][ggplot2::rel] to signal
-#' values as the fraction of maximal height. 
+#' values as the fraction of maximal height.
 #' @param step_increase A list or a numeric vector  with length `1` or PANEL
 #' number indicating the increase for every additional comparison to minimize
 #' overlap, use [rel][ggplot2::rel] to signal values as the fraction of maximal
@@ -157,9 +157,7 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         height <- params$height
         step_increase <- params$step_increase
 
-        # for label data, there are two things
-        # one for label: c(x, y, label)
-        # Another for label horizontal segments - c(xmin, xmax, y0, y0)
+        # prepare data
         data <- ggplot2::flip_data(data, params$flipped_aes)
         data <- ggplot2::remove_missing(
             data,
@@ -167,25 +165,37 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
             na.rm = params$na.rm,
             name = "geom_comparetest"
         )
+        data <- data[order(data$y), ]
+
+        # for label data, there are two things
+        # one for label: c(x, y, label)
+        # Another for label horizontal segments - c(xmin, xmax, y0, y0)
+
         data <- data[data$label != "...hide...", , drop = FALSE]
         if (is.null(data$x)) {
             data$x <- (data$xmin + data$xmax) / 2L
         }
         # we should increase the segment y value in each panel individually
         data <- unname(split(data, ~PANEL, drop = TRUE))
-        data <- lapply(seq_along(data), function(i) {
-            temp <- data[[i]]
+        data <- lapply(seq_along(data), function(panel) {
+            temp <- data[[panel]]
             baseline <- max(temp$y, na.rm = TRUE)
-            height <- height[[i]]
-            step_increase <- step_increase[[i]]
+            height <- height[[panel]]
+            step_increase <- step_increase[[panel]]
             if (is_rel(height)) {
                 height <- baseline * unclass(height)
             }
-            if (is_rel(step_increase)) {
-                step_increase <- baseline * unclass(step_increase)
-            }
-            step_increase <- (seq_len(nrow(temp)) - 1L) * step_increase
-            temp$y <- temp$y + height + step_increase
+            temp$y <- temp$y + height
+
+            # if step_increase is smaller than the difference of y value between
+            # current label and lower label. If so, we shouldn't increase the
+            # current label y value.
+            temp$y <- pmax(
+                temp$y, 
+                c(temp$y[1L], temp$y[-length(temp$y)] + step_increase),
+                na.rm = TRUE
+            )
+
             temp$baseline <- baseline
             temp
         })
