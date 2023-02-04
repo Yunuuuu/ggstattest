@@ -11,7 +11,7 @@
 #' @param hide_ns A logical value or a function (can be purrr-style) which take
 #' statistical result as an argument and return a logical value indicating
 #' whether hide this result. If TRUE, this will flag the statistical result
-#' whose `p.value > 0.05` ("p.value" is obtained by stat_result$p.value, so
+#' whose `p.value > 0.05` ("p.value" is obtained by `stat_result$p.value`, so
 #' ensure the results returned by `method` have a "p.value" item) with
 #' "...hide..." and `geom_comparetest` will remove rows with "...hide...".
 #' @param method_args other arguments passed to function specified in
@@ -269,6 +269,6 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
         stat_data$x <- (stat_data$xmin + stat_data$xmax) / 2L
         stat_data$label <- label
         stat_data$flipped_aes <- flipped_aes
-        ggplot2::flip_data(stat_data[order(stat_data$y), ], flipped_aes)
+        stat_data
     }
 )
