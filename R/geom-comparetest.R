@@ -190,12 +190,15 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
             # if step_increase is smaller than the difference of y value between
             # current label and lower label. If so, we shouldn't increase the
             # current label y value.
-            temp$y <- pmax(
-                temp$y, 
-                c(temp$y[1L], temp$y[-length(temp$y)] + step_increase),
-                na.rm = TRUE
-            )
-
+            label_number <- length(temp$y)
+            if (label_number >= 2L) {
+                if (is_rel(step_increase)) {
+                    step_increase <- baseline * unclass(step_increase)
+                }
+                for (i in 2:label_number) {
+                   temp$y[i] <- max(temp$y[i - 1L] + step_increase, temp$y[i])
+                }
+            }
             temp$baseline <- baseline
             temp
         })
