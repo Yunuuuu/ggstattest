@@ -46,9 +46,10 @@
 #'   \item{y *or* x}{the y (or x) coordinates for labels, usually equal to
 #'   the max y-axis (x-axis) value span from xmin (ymin) to xmax (ymax)}
 #'   \item{label}{the statistical test results}
-#'   \item{tip}{a list of numerical vector gives the x-axis (discrete position
-#'   aesthetic) coordinates of tip, the tip will be drawn down the position.
-#'   }
+#'   \item{tip}{a list of data.frame gives the coordinates of tip where x
+#'   corresponds to the x axis of current comparison group, and y corresponds to
+#'   the maximal values of current comparison group. the tip length is reverse
+#'   to the y value}
 #' }
 #' @rdname geom_comparetest
 #' @export
@@ -198,7 +199,10 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
         names(x_to_maxy) <- as.character(max_y_df[["x"]])
         # browser()
         stat_data <- lapply(compare_list, function(comparison) {
-            tip <- comparison
+            tip <- tibble::tibble(
+                x = comparison,
+                y = unname(x_to_maxy[as.character(comparison)])
+            )
             h_segments <- range(comparison)
             tibble::tibble(
                 xmin = h_segments[[1L]],
@@ -268,7 +272,11 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
         }
         stat_data$x <- (stat_data$xmin + stat_data$xmax) / 2L
         stat_data$label <- label
+        stat_data$tip <- lapply(
+            stat_data$tip, ggplot2::flip_data,
+            flip = flipped_aes
+        )
         stat_data$flipped_aes <- flipped_aes
-        stat_data
+        ggplot2::flip_data(stat_data, flipped_aes)
     }
 )

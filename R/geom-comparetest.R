@@ -9,8 +9,8 @@
 #' height of the panel.
 #' @param tip_length A list or a numeric vector  with length `1` or PANEL number
 #' indicating the length of the beard which is drawn down the comparison group,
-#' use [rel][ggplot2::rel] to signal values as the fraction of the maximal
-#' height of current group.
+#' use [rel][ggplot2::rel] to signal values as the fraction of the difference
+#' between the horizontal segment and the maximal value of current group.
 #' @param nudge_x,nudge_y Horizontal and vertical adjustment to nudge labels by.
 #' A list or a numeric vector with length `1` or PANEL number indicating the
 #' value where label start. use [rel][ggplot2::rel] to signal values as the
@@ -174,11 +174,8 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
             na.rm = params$na.rm,
             name = "geom_comparetest"
         )
-        data <- data[order(data$y), ]
         data <- data[data$label != "...hide...", , drop = FALSE]
-
-        # we keep the unchanged y value for the usage of tip_length
-        data$y0 <- data$y
+        data <- data[order(data$y), ]
 
         # for label data, there are two things
         # one for label: c(x, y, label)
@@ -208,24 +205,27 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
                     step_increase <- baseline * unclass(step_increase)
                 }
                 for (i in 2:label_number) {
-                    temp$y[i] <- max(temp$y[i - 1L] + step_increase, temp$y[i])
+                    temp$y[i] <- max(
+                        temp$y[i - 1L] + step_increase, temp$y[i],
+                        na.rm = TRUE
+                    )
                 }
             }
             # yend coordinate is for segments
-            data$yend <- data$y
+            temp$yend <- temp$y
 
             # nudge_x and nudge_y will nudge the coordinates of label but not
             # the coordinates of segments
-            data <- ggplot2::flip_data(data, params$flipped_aes)
+            temp <- ggplot2::flip_data(temp, params$flipped_aes)
             # nudge label coordinates
             if (is_rel(nudge_x)) {
                 nudge_x <- baseline * unclass(nudge_x)
             }
-            data$x <- data$x + params$nudge_x
+            temp$x <- temp$x + nudge_x
             if (is_rel(nudge_y)) {
                 nudge_y <- baseline * unclass(nudge_y)
             }
-            data$y <- data$y + params$nudge_y
+            temp$y <- temp$y + nudge_y
             temp
         })
         data <- do.call("rbind", data)
@@ -249,9 +249,6 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
             horizontal_seg, c(xmin = "x", xmax = "xend")
         )
 
-        # For vertical segments, `tip` gave the x coordinates of the tip,
-        # the tip length is reverse to the y value
-
         # since vertical segments will not exceed the corresponding horizontal
         # segment, so the y should equal to `yend - tip_length`.  c(x, yend -
         # tip_length, x, yend)
@@ -260,24 +257,39 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         vertical_seg <- label_data[
             c("yend", setdiff(names(label_data), c(x_aes, y_aes)))
         ]
+
+        # For vertical segments, `tip` gave the coordinates of the tip, where x
+        # corresponds to the x axis of current group, and y corresponds to the
+        # maximal values of current group.
         if (is.null(vertical_seg$tip)) {
-            # for NULL tip data, the tip should run vertically along the `x` and
+            # for NULL tip data, the tip should vertically down the `x` and
             # `xend` of horizontal lines
             vertical_seg$tip <- lapply(
                 seq_len(nrow(horizontal_seg)), function(i) {
-                    c(horizontal_seg$x[[i]], horizontal_seg$xend[[i]])
+                    tibble::tibble(
+                        x = c(
+                            horizontal_seg$x[[i]],
+                            horizontal_seg$xend[[i]]
+                        ),
+                        y = rep(horizontal_seg$yend[[i]], times = 2L)
+                    )
                 }
+            )
+        } else {
+            vertical_seg$tip <- lapply(
+                vertical_seg$tip, ggplot2::flip_data,
+                flipped_aes
             )
         }
         vertical_seg <- tidyr::unnest(vertical_seg, all_of("tip"))
-        vertical_seg <- rename(vertical_seg, c(tip = "x"))
         vertical_seg$xend <- vertical_seg$x
         if (is_rel(tip_length)) {
             vertical_seg$y <- vertical_seg$yend - unclass(tip_length) *
-                vertical_seg$y0
+                (vertical_seg$yend - vertical_seg$y)
         } else {
             vertical_seg$y <- vertical_seg$yend - tip_length
         }
+
         seg_columns <- intersect(
             colnames(horizontal_seg),
             colnames(vertical_seg)
