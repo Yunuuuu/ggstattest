@@ -76,21 +76,25 @@ settings of the adjustment.}
 
 \item{height}{A list or a numeric vector with length \code{1} or PANEL number
 indicating the value where label start. use \link[ggplot2:element]{rel} to signal
-values as the fraction of maximal height.}
+values as the fraction of maximal height of the panel.}
 
 \item{step_increase}{A list or a numeric vector  with length \code{1} or PANEL
 number indicating the increase for every additional comparison to minimize
 overlap, use \link[ggplot2:element]{rel} to signal values as the fraction of maximal
-height .}
+height of the panel.}
 
 \item{tip_length}{A list or a numeric vector  with length \code{1} or PANEL number
-indicating the length of the beard, use \link[ggplot2:element]{rel} to signal values
-as the fraction of the maximal height.}
+indicating the length of the beard which is drawn down the comparison group,
+use \link[ggplot2:element]{rel} to signal values as the fraction of the maximal
+height of current group.}
 
 \item{...}{Other arguments passed on to \code{\link[ggplot2:layer]{ggplot2::layer()}}. These are often
 aesthetics, used to set an aesthetic to a fixed value, like \code{colour = "red"} or \code{size = 3}. They may also be parameters to the paired geom/stat.}
 
-\item{nudge_x, nudge_y}{Horizontal and vertical adjustment to nudge labels by.}
+\item{nudge_x, nudge_y}{Horizontal and vertical adjustment to nudge labels by.
+A list or a numeric vector with length \code{1} or PANEL number indicating the
+value where label start. use \link[ggplot2:element]{rel} to signal values as the
+fraction of maximal height of the panel.}
 
 \item{parse}{If \code{TRUE}, the labels will be parsed into expressions and
 displayed as described in \code{?plotmath}.}
@@ -138,7 +142,7 @@ variable.}
 \item{hide_ns}{A logical value or a function (can be purrr-style) which take
 statistical result as an argument and return a logical value indicating
 whether hide this result. If TRUE, this will flag the statistical result
-whose \code{p.value > 0.05} ("p.value" is obtained by stat_result$p.value, so
+whose \code{p.value > 0.05} ("p.value" is obtained by \code{stat_result$p.value}, so
 ensure the results returned by \code{method} have a "p.value" item) with
 "...hide..." and \code{geom_comparetest} will remove rows with "...hide...".}
 
@@ -184,7 +188,7 @@ segments underneath label}
 the max y-axis (x-axis) value span from xmin (ymin) to xmax (ymax)}
 \item{label}{the statistical test results}
 \item{tip}{a list of numerical vector gives the x-axis (discrete position
-aesthetic) coordinates of tip, the tip will draw down the position.
+aesthetic) coordinates of tip, the tip will be drawn down the position.
 }
 }
 }

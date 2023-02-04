@@ -47,7 +47,7 @@
 #'   the max y-axis (x-axis) value span from xmin (ymin) to xmax (ymax)}
 #'   \item{label}{the statistical test results}
 #'   \item{tip}{a list of numerical vector gives the x-axis (discrete position
-#'   aesthetic) coordinates of tip, the tip will draw down the position.
+#'   aesthetic) coordinates of tip, the tip will be drawn down the position.
 #'   }
 #' }
 #' @rdname geom_comparetest
