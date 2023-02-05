@@ -10,9 +10,9 @@ geom_comparetest(
   data = NULL,
   stat = "comparetest",
   position = "identity",
-  height = rel(0.05),
-  step_increase = rel(0.2),
-  tip_length = rel(0.05),
+  height = NULL,
+  step_increase = NULL,
+  tip_length = NULL,
   ...,
   nudge_x = NULL,
   nudge_y = NULL,
@@ -77,17 +77,18 @@ settings of the adjustment.}
 
 \item{height}{A list or a numeric vector with length \code{1} or PANEL number
 indicating the value where label start. use \link[ggplot2:element]{rel} to signal
-values as the fraction of maximal height of the panel.}
+values as the fraction of maximal height of the panel. Default: \code{rel(0.05)}}
 
 \item{step_increase}{A list or a numeric vector  with length \code{1} or PANEL
 number indicating the increase for every additional comparison to minimize
 overlap, use \link[ggplot2:element]{rel} to signal values as the fraction of maximal
-height of the panel.}
+height of the panel. Default: \code{rel(0.1)}}
 
 \item{tip_length}{A list or a numeric vector  with length \code{1} or PANEL number
 indicating the length of the beard which is drawn down the comparison group,
 use \link[ggplot2:element]{rel} to signal values as the fraction of the difference
-between the horizontal segment and the maximal value of current group.}
+between the horizontal segment and the maximal value of current group.
+Default: \code{rel(0.01)}}
 
 \item{...}{Other arguments passed on to \code{\link[ggplot2:layer]{ggplot2::layer()}}. These are often
 aesthetics, used to set an aesthetic to a fixed value, like \code{colour = "red"} or \code{size = 3}. They may also be parameters to the paired geom/stat.}
@@ -177,7 +178,7 @@ result whose \code{p.value >= sig_level} ("p.value" is obtained by
 "p.value" item) with "...hide..." and \code{geom_comparetest} will remove rows
 with "...hide...".}
 
-\item{sig_level}{The significant level used by \code{hide_ns}, default: \code{0.05}.}
+\item{sig_level}{The significant level used by \code{hide_ns}. Default: \code{0.05}.}
 
 \item{geom}{The geometric object to use to display the data, either as a
 \code{ggproto} \code{Geom} subclass or as a string naming the geom stripped of the

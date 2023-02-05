@@ -42,7 +42,7 @@
 #' `stat_result$p.value`, so ensure the results returned by `method` have a
 #' "p.value" item) with "...hide..." and `geom_comparetest` will remove rows
 #' with "...hide...".
-#' @param sig_level The significant level used by `hide_ns`, default: `0.05`.
+#' @param sig_level The significant level used by `hide_ns`. Default: `0.05`.
 #' @inheritParams ggplot2::stat_identity
 #' @section Computed variables:
 #' `stat_comparetest()` provides the following variables, some of which depend on the orientation:
@@ -68,7 +68,7 @@ stat_comparetest <- function(mapping = NULL, data = NULL,
                              method_args = NULL,
                              compare_list = NULL,
                              label_fn = NULL,
-                             hide_ns = TRUE, 
+                             hide_ns = TRUE,
                              sig_level = 0.05,
                              geom = "comparetest", position = "identity",
                              na.rm = FALSE, show.legend = NA,
@@ -158,7 +158,8 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
         )
         data
     },
-    compute_panel = function(data, scales, method = NULL, hide_ns, sig_level,
+    compute_panel = function(data, scales, method = "nonparametric",
+                             hide_ns = TRUE, sig_level = 0.05,
                              compare_list = NULL, method_args = list(),
                              label_fn = NULL, na.rm = FALSE,
                              flipped_aes = FALSE) {
@@ -190,7 +191,7 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
         # results (a string label), the compare_list define the comparison
         # groups in the x axis. The horizontal segment should span range from
         # min(comparison) to max(comparison), comparison is the x-axis value
-        # defined in compare_list. 
+        # defined in compare_list.
 
         # for each group in the x-axis, we extract the max y value for the usage
         # of the tip length.
@@ -205,7 +206,7 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
 
         stat_data <- lapply(compare_list, function(comparison) {
             # the beard tip should down the y-axis of in all comparison groups
-            # we keep the 
+            # we keep the
             tip <- tibble::tibble(
                 x = comparison,
                 y = unname(group_x_to_maxy[as.character(comparison)])

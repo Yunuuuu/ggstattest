@@ -2,15 +2,16 @@
 #'
 #' @param height A list or a numeric vector with length `1` or PANEL number
 #' indicating the value where label start. use [rel][ggplot2::rel] to signal
-#' values as the fraction of maximal height of the panel.
+#' values as the fraction of maximal height of the panel. Default: `rel(0.05)`
 #' @param step_increase A list or a numeric vector  with length `1` or PANEL
 #' number indicating the increase for every additional comparison to minimize
 #' overlap, use [rel][ggplot2::rel] to signal values as the fraction of maximal
-#' height of the panel.
+#' height of the panel. Default: `rel(0.1)`
 #' @param tip_length A list or a numeric vector  with length `1` or PANEL number
 #' indicating the length of the beard which is drawn down the comparison group,
 #' use [rel][ggplot2::rel] to signal values as the fraction of the difference
 #' between the horizontal segment and the maximal value of current group.
+#' Default: `rel(0.01)`
 #' @param nudge_x,nudge_y Horizontal and vertical adjustment to nudge labels by.
 #' A list or a numeric vector with length `1` or PANEL number indicating the
 #' value where label start. use [rel][ggplot2::rel] to signal values as the
@@ -85,9 +86,8 @@
 #' @rdname geom_comparetest
 geom_comparetest <- function(mapping = NULL, data = NULL,
                              stat = "comparetest", position = "identity",
-                             height = rel(0.05),
-                             step_increase = rel(0.2),
-                             tip_length = rel(0.05),
+                             height = NULL, step_increase = NULL,
+                             tip_length = NULL,
                              ..., nudge_x = NULL, nudge_y = NULL,
                              parse = FALSE, arrow = NULL, arrow_fill = NULL,
                              lineend = "butt", linejoin = "round",
@@ -147,12 +147,15 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
             data, params,
             main_is_continuous = FALSE
         )
+        if (is.null(params$height)) params$height <- rel(0.05)
+        if (is.null(params$step_increase)) params$step_increase <- rel(0.1)
+        if (is.null(params$tip_length)) params$tip_length <- rel(0.01)
         if (params$flipped_aes) {
-            if (is.null(params$nudge_x)) params$nudge_x <- rel(0.05)
+            if (is.null(params$nudge_x)) params$nudge_x <- rel(0.01)
             if (is.null(params$nudge_y)) params$nudge_y <- 0
         } else {
             if (is.null(params$nudge_x)) params$nudge_x <- 0
-            if (is.null(params$nudge_y)) params$nudge_y <- rel(0.05)
+            if (is.null(params$nudge_y)) params$nudge_y <- rel(0.01)
         }
         panel_number <- length(unique(data$PANEL))
         fail_parms <- character()
@@ -170,7 +173,7 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         }
         params
     },
-    extra_params = c("na.rm", "orientation", "height", "step_increase"),
+    extra_params = c("na.rm", "orientation", "height", "step_increase", "nudge_x", "nudge_y"),
     draw_key = function(...) {
         ggplot2::zeroGrob()
     },
@@ -252,7 +255,7 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         data
     },
     draw_panel = function(self, data, panel_params, coord,
-                          tip_length, nudge_x = NULL, nudge_y = NULL,
+                          tip_length = NULL,
                           parse = FALSE, arrow = NULL, arrow_fill = NULL,
                           lineend = "butt", linejoin = "round",
                           na.rm, flipped_aes = FALSE) {
