@@ -168,7 +168,7 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
             }
         }
         if (length(fail_parms)) {
-            cli::cli_abort("The length of {.arg {fail_parms}} must equal to 1L or the panel numbers ({.val {panel_number}})")
+            cli::cli_abort("The length of {.arg {fail_parms}} must equal to {.val 1L} or the panel numbers ({.val {panel_number}})")
         }
         params
     },
