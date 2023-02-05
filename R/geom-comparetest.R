@@ -203,15 +203,15 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         # one for label: c(x, y, label)
         # Another for label horizontal segments - c(xmin, xmax, yend, yend)
         # we should increase the segment y value in each panel individually
-        data <- unname(split(data, ~PANEL, drop = TRUE))
-        data <- lapply(seq_along(data), function(panel) {
+        data <- split(data, ~PANEL, drop = TRUE)
+        data <- lapply(names(data), function(panel) {
             temp <- data[[panel]]
-
+            panel_idx <- as.integer(panel)
             baseline <- max(temp$y, na.rm = TRUE)
-            height <- height[[panel]]
-            step_increase <- step_increase[[panel]]
-            nudge_x <- nudge_x[[panel]]
-            nudge_y <- nudge_y[[panel]]
+            height <- height[[panel_idx]]
+            step_increase <- step_increase[[panel_idx]]
+            nudge_x <- nudge_x[[panel_idx]]
+            nudge_y <- nudge_y[[panel_idx]]
 
             if (is_rel(height)) {
                 height <- baseline * unclass(height)
