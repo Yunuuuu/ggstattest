@@ -235,16 +235,14 @@ StatAnnotest <- ggplot2::ggproto("StatAnnotest", ggplot2::Stat,
             }
         }
         method <- rlang::as_function(method)
+        stat_res <- rlang::inject(
+            method(formula = !!formula, data = !!data, !!!method_args)
+        )
         label_fn <- rlang::as_function(label_fn)
-        stat_res <- rlang::inject(method(
-            formula = formula,
-            data = data,
-            !!!method_args
-        ))
         label <- as.character(label_fn(stat_res))
-        if (!identical(length(label), 1L)) {
+        if (length(label) != 1L) {
             cli::cli_abort(
-                "Function {.arg label_fn} should return a length one value."
+                "Function {.arg label_fn} should return a scalar string."
             )
         }
         # keep xmin, xmax, ymin and ymax to help scale train data ranges
