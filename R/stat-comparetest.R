@@ -47,16 +47,16 @@
 #' @section Computed variables:
 #' `stat_comparetest()` provides the following variables, some of which depend on the orientation:
 #' \describe{
-#'   \item{xmin *or* ymin}{the left (or lower) side of horizontal (or vertical)
+#'   \item{xmin *or* ymin}{The left (or lower) side of horizontal (or vertical)
 #'   segments underneath label}
-#'   \item{xmax *or* ymax}{the right (or upper) side of horizontal (or vertical)
+#'   \item{xmax *or* ymax}{The right (or upper) side of horizontal (or vertical)
 #'   segments underneath label}
-#'   \item{x *or* y}{the x (or y) coordinates for labels, usually equal to
-#'   (xmin + xmax) / 2 or (ymin + ymax) / 2}
-#'   \item{y *or* x}{the y (or x) coordinates for labels, usually equal to
+#'   \item{x *or* y}{The x (or y) coordinates for labels, usually equal to
+#'   `(xmin + xmax) / 2` or `(ymin + ymax) / 2`}
+#'   \item{y *or* x}{The y (or x) coordinates for labels, usually equal to
 #'   the max y-axis (x-axis) value span from xmin (ymin) to xmax (ymax)}
-#'   \item{label}{the statistical test results}
-#'   \item{tip}{a list of data.frame gives the coordinates of tip where x or y
+#'   \item{label}{The statistical test results}
+#'   \item{tip}{A list of data.frame gives the coordinates of tip where x or y
 #'   corresponds to the scaled discrete variable, and y (or x) corresponds to
 #'   the maximal values of current comparison group. the tip length is reverse
 #'   to the y value}

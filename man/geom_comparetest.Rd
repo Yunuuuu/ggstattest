@@ -190,17 +190,17 @@ Statistical Compare test
 
 \code{geom_segment()} understands the following aesthetics (required aesthetics
 are in bold):
-\itemize{
-\item{\verb{*xmin*} \emph{or} \verb{*ymin*}}{the left (or lower) side of horizontal (or
+\describe{
+\item{\verb{*xmin*} \emph{or} \verb{*ymin*}}{The left (or lower) side of horizontal (or
 vertical) segments underneath label}
-\item{\verb{*xmax*} \emph{or} \verb{*ymax*}}{the right (or upper) side of horizontal (or
+\item{\verb{*xmax*} \emph{or} \verb{*ymax*}}{The right (or upper) side of horizontal (or
 vertical) segments underneath label}
-\item{\verb{*y*} \emph{or} \verb{*x*}}{the y (or x) coordinates for labels, usually equal
+\item{\verb{*y*} \emph{or} \verb{*x*}}{The y (or x) coordinates for labels, usually equal
 to the max y-axis (x-axis) value span from xmin (ymin) to xmax (ymax)}
-\item{\verb{*label*}}{the statistical test results}
-\item{\code{x} \emph{or} \code{y}}{the x (or y) coordinates for labels, usually equal to
+\item{\verb{*label*}}{The statistical test results}
+\item{\code{x} \emph{or} \code{y}}{The x (or y) coordinates for labels, usually equal to
 (xmin + xmax) / 2 or (ymin + ymax) / 2}
-\item{\code{tip}}{a list of data.frame gives the coordinates of tip where x or y
+\item{\code{tip}}{A list of data.frame gives the coordinates of tip where x or y
 corresponds to the scaled discrete variable or x0 (or y0) is the actual
 value of the discrete variable (one of x or x0 (y or y0) is required) and y
 (or x) (required) corresponds to the maximal values of current comparison
@@ -212,16 +212,16 @@ group. the tip length is reverse to the y value}
 
 \code{stat_comparetest()} provides the following variables, some of which depend on the orientation:
 \describe{
-\item{xmin \emph{or} ymin}{the left (or lower) side of horizontal (or vertical)
+\item{xmin \emph{or} ymin}{The left (or lower) side of horizontal (or vertical)
 segments underneath label}
-\item{xmax \emph{or} ymax}{the right (or upper) side of horizontal (or vertical)
+\item{xmax \emph{or} ymax}{The right (or upper) side of horizontal (or vertical)
 segments underneath label}
-\item{x \emph{or} y}{the x (or y) coordinates for labels, usually equal to
-(xmin + xmax) / 2 or (ymin + ymax) / 2}
-\item{y \emph{or} x}{the y (or x) coordinates for labels, usually equal to
+\item{x \emph{or} y}{The x (or y) coordinates for labels, usually equal to
+\code{(xmin + xmax) / 2} or \code{(ymin + ymax) / 2}}
+\item{y \emph{or} x}{The y (or x) coordinates for labels, usually equal to
 the max y-axis (x-axis) value span from xmin (ymin) to xmax (ymax)}
-\item{label}{the statistical test results}
-\item{tip}{a list of data.frame gives the coordinates of tip where x or y
+\item{label}{The statistical test results}
+\item{tip}{A list of data.frame gives the coordinates of tip where x or y
 corresponds to the scaled discrete variable, and y (or x) corresponds to
 the maximal values of current comparison group. the tip length is reverse
 to the y value}

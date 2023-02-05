@@ -35,17 +35,17 @@
 #' @section Aesthetics:
 #' `geom_segment()` understands the following aesthetics (required aesthetics
 #' are in bold):
-#' \itemize{
-#'   \item{`*xmin*` *or* `*ymin*`}{the left (or lower) side of horizontal (or
+#' \describe{
+#'   \item{`*xmin*` *or* `*ymin*`}{The left (or lower) side of horizontal (or
 #'   vertical) segments underneath label}
-#'   \item{`*xmax*` *or* `*ymax*`}{the right (or upper) side of horizontal (or
+#'   \item{`*xmax*` *or* `*ymax*`}{The right (or upper) side of horizontal (or
 #'   vertical) segments underneath label}
-#'   \item{`*y*` *or* `*x*`}{the y (or x) coordinates for labels, usually equal
+#'   \item{`*y*` *or* `*x*`}{The y (or x) coordinates for labels, usually equal
 #'   to the max y-axis (x-axis) value span from xmin (ymin) to xmax (ymax)}
-#'   \item{`*label*`}{the statistical test results}
-#'   \item{`x` *or* `y`}{the x (or y) coordinates for labels, usually equal to
+#'   \item{`*label*`}{The statistical test results}
+#'   \item{`x` *or* `y`}{The x (or y) coordinates for labels, usually equal to
 #'   (xmin + xmax) / 2 or (ymin + ymax) / 2}
-#'   \item{`tip`}{a list of data.frame gives the coordinates of tip where x or y
+#'   \item{`tip`}{A list of data.frame gives the coordinates of tip where x or y
 #'   corresponds to the scaled discrete variable or x0 (or y0) is the actual
 #'   value of the discrete variable (one of x or x0 (y or y0) is required) and y
 #'   (or x) (required) corresponds to the maximal values of current comparison
@@ -256,14 +256,13 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
                           parse = FALSE, arrow = NULL, arrow_fill = NULL,
                           lineend = "butt", linejoin = "round",
                           na.rm, flipped_aes = FALSE) {
-        label_data <- ggplot2::flip_data(data, flipped_aes)
+        data <- ggplot2::flip_data(data, flipped_aes)
+
+        non_pos_aes <- setdiff(names(data), c(x_aes, y_aes))
+
+        label_data <- data[c("x", "y", non_pos_aes)]
         # horizontal segments data, we should keep non-position aesthetic
-        horizontal_seg <- label_data[
-            c(
-                "xmin", "xmax", "yend",
-                setdiff(names(label_data), c(x_aes, y_aes))
-            )
-        ]
+        horizontal_seg <- data[c("xmin", "xmax", "yend", non_pos_aes)]
         horizontal_seg$y <- horizontal_seg$yend
         horizontal_seg <- rename(
             horizontal_seg, c(xmin = "x", xmax = "xend")
@@ -274,9 +273,7 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         # tip_length, x, yend)
         tip_length <- tip_length[[data$PANEL[[1L]]]]
         # we keep all the non-position aesthetic
-        vertical_seg <- label_data[
-            c("yend", setdiff(names(label_data), c(x_aes, y_aes)))
-        ]
+        vertical_seg <- data[c("yend", non_pos_aes)]
 
         # For vertical segments, `tip` gave the coordinates of the tip, where x
         # corresponds to the x axis of current group, and y corresponds to the
@@ -332,10 +329,7 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
             vertical_seg$y <- vertical_seg$yend - tip_length
         }
 
-        seg_columns <- intersect(
-            colnames(horizontal_seg),
-            colnames(vertical_seg)
-        )
+        seg_columns <- c("x", "xend", "y", "yend", non_pos_aes)
         seg_data <- rbind(
             horizontal_seg[seg_columns],
             vertical_seg[seg_columns]
