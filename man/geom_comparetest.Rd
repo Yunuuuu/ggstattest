@@ -75,28 +75,28 @@ stat stripped of the \code{stat_} prefix (e.g. \code{"count"} rather than
 position adjustment function. Use the latter if you need to change the
 settings of the adjustment.}
 
-\item{height}{A list or a numeric vector with length \code{1} or PANEL number
-indicating the value where label start. use \link[ggplot2:element]{rel} to signal
-values as the fraction of maximal height of the panel. Will elevate both
-label and segment. Default: \code{rel(0.05)}}
+\item{height}{A list or a numeric vector indicating the value where label
+start, this will be recycled to fit the number of panel. Using
+\link[ggplot2:element]{rel} to signal values as the fraction of maximal height of the
+panel. Will elevate both label and segment. Default: \code{rel(0.05)}}
 
-\item{step_increase}{A list or a numeric vector  with length \code{1} or PANEL
-number indicating the increase for every additional comparison to minimize
-overlap, use \link[ggplot2:element]{rel} to signal values as the fraction of maximal
-height of the panel. Default: \code{rel(0.1)}}
+\item{step_increase}{A list or a numeric vector indicating the increase for
+every additional comparison to minimize overlap, this will be recycled to fit
+the number of panel. Using \link[ggplot2:element]{rel} to signal values as the
+fraction of maximal height of the panel. Default: \code{rel(0.1)}}
 
-\item{tip_length}{A list or a numeric vector  with length \code{1} or PANEL number
-indicating the length of the beard which is drawn down the comparison group,
-use \link[ggplot2:element]{rel} to signal values as the fraction of the difference
-between the horizontal segment and the maximal value of current group.
-Default: \code{rel(0.01)}}
+\item{tip_length}{A list or a numeric vector indicating the length of the
+beard which is drawn down the comparison group, this will be recycled to fit
+the number of panel. Using \link[ggplot2:element]{rel} to signal values as the
+fraction of the difference between the horizontal segment and the maximal
+value of current group.  Default: \code{rel(0.01)}}
 
 \item{nudge_x, nudge_y}{Horizontal and vertical adjustment to nudge labels by.
-Useful for offsetting text from segments, particularly on discrete scales.A
-list or a numeric vector with length \code{1} or PANEL number. use
-\link[ggplot2:element]{rel} to signal values as the fraction of maximal height of
-the panel. Will just nudge the label but not the segment. This different
-from \code{\link[ggplot2:geom_text]{geom_text}}.}
+Useful for offsetting text from segments, particularly on discrete scales.
+A list or a numeric vector, this will be recycled to fit the number of
+panel. Using \link[ggplot2:element]{rel} to signal values as the fraction of
+maximal height of the panel. Will just nudge the label but not the segment.
+This different from \code{\link[ggplot2:geom_text]{geom_text}}.}
 
 \item{...}{Other arguments passed on to \code{\link[ggplot2:layer]{ggplot2::layer()}}. These are often
 aesthetics, used to set an aesthetic to a fixed value, like \code{colour = "red"} or \code{size = 3}. They may also be parameters to the paired geom/stat.}

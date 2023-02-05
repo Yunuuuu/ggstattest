@@ -1,24 +1,24 @@
 #' Statistical Compare test
 #'
-#' @param height A list or a numeric vector with length `1` or PANEL number
-#' indicating the value where label start. use [rel][ggplot2::rel] to signal
-#' values as the fraction of maximal height of the panel. Will elevate both
-#' label and segment. Default: `rel(0.05)`
-#' @param step_increase A list or a numeric vector  with length `1` or PANEL
-#' number indicating the increase for every additional comparison to minimize
-#' overlap, use [rel][ggplot2::rel] to signal values as the fraction of maximal
-#' height of the panel. Default: `rel(0.1)`
-#' @param tip_length A list or a numeric vector  with length `1` or PANEL number
-#' indicating the length of the beard which is drawn down the comparison group,
-#' use [rel][ggplot2::rel] to signal values as the fraction of the difference
-#' between the horizontal segment and the maximal value of current group.
-#' Default: `rel(0.01)`
+#' @param height A list or a numeric vector indicating the value where label
+#' start, this will be recycled to fit the number of panel. Using
+#' [rel][ggplot2::rel] to signal values as the fraction of maximal height of the
+#' panel. Will elevate both label and segment. Default: `rel(0.05)`
+#' @param step_increase A list or a numeric vector indicating the increase for
+#' every additional comparison to minimize overlap, this will be recycled to fit
+#' the number of panel. Using [rel][ggplot2::rel] to signal values as the
+#' fraction of maximal height of the panel. Default: `rel(0.1)`
+#' @param tip_length A list or a numeric vector indicating the length of the
+#' beard which is drawn down the comparison group, this will be recycled to fit
+#' the number of panel. Using [rel][ggplot2::rel] to signal values as the
+#' fraction of the difference between the horizontal segment and the maximal
+#' value of current group.  Default: `rel(0.01)`
 #' @param nudge_x,nudge_y Horizontal and vertical adjustment to nudge labels by.
-#'   Useful for offsetting text from segments, particularly on discrete scales.A
-#'   list or a numeric vector with length `1` or PANEL number. use
-#'   [rel][ggplot2::rel] to signal values as the fraction of maximal height of
-#'   the panel. Will just nudge the label but not the segment. This different
-#'   from [`geom_text`][ggplot2::geom_text].
+#'   Useful for offsetting text from segments, particularly on discrete scales.
+#'   A list or a numeric vector, this will be recycled to fit the number of
+#'   panel. Using [rel][ggplot2::rel] to signal values as the fraction of
+#'   maximal height of the panel. Will just nudge the label but not the segment.
+#'   This different from [`geom_text`][ggplot2::geom_text].
 #' @param parse If `TRUE`, the labels will be parsed into expressions and
 #'   displayed as described in `?plotmath`.
 #' @param arrow specification for arrow heads, as created by [grid::arrow()].
@@ -156,19 +156,9 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         if (is.null(params$tip_length)) params$tip_length <- rel(0.01)
         if (is.null(params$nudge_x)) params$nudge_x <- 0L
         if (is.null(params$nudge_y)) params$nudge_y <- 0L
-        panel_number <- length(unique(data$PANEL))
-        fail_parms <- character()
+        panel_number <- max(length(unique(data$PANEL)), data$PANEL)
         for (i in c("height", "step_increase", "tip_length", "nudge_x", "nudge_y")) {
-            value <- params[[i]]
-            i_len <- length(value)
-            if (i_len == 1L) {
-                params[[i]] <- rep.int(list(value), times = panel_number)
-            } else if (i_len != panel_number) {
-                fail_parms <- c(fail_parms, i)
-            }
-        }
-        if (length(fail_parms)) {
-            cli::cli_abort("The length of {.arg {fail_parms}} must equal to {.val 1L} or the panel numbers ({.val {panel_number}})")
+            params[[i]] <- rep_len(params[[i]], panel_number)
         }
         params
     },

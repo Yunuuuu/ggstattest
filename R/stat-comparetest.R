@@ -128,18 +128,6 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
                 )
             }
         }
-
-        # check there has at least 2 unique x values to implement test
-        unique_values <- unique(data$x)
-        unique_numbers <- length(unique_values)
-        if (unique_numbers < 2L) {
-            cli::cli_warn(
-                c(
-                    "Cannot implment statistical test.",
-                    "!" = "the number of unique values in {.field {ggplot2::flipped_names(params$flipped_aes)$x}} is less than {val 2}." # nolint
-                )
-            )
-        }
         params
     },
     extra_params = c("na.rm", "orientation"),
@@ -167,6 +155,17 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
         }
         unique_values <- unclass(unique(data$x))
         unique_numbers <- length(unique_values)
+
+        # check there has at least 2 unique x values to implement test
+        if (unique_numbers < 2L) {
+            cli::cli_warn(
+                c(
+                    "Cannot implment statistical test for PANEL {.val {data$PANEL[1L]}}.",
+                    "!" = "the number of unique values in {.field {ggplot2::flipped_names(flipped_aes)$x}} is less than {.val {2L}}." # nolint
+                )
+            )
+            return(data.frame())
+        }
 
         # set defaul value for compare_list
         # if NULL, all paired comparison will be performed, use the level of the
