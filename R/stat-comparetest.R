@@ -3,7 +3,10 @@
 #' compare three or more groups. Support lamda created from a formula. This can
 #' also be "none" indicates no test will be implemented. The method should
 #' always accept a **formula** argument whose value will be set as `y ~ x`, the
-#' `x` is the discrete variable and the `y` is the continuous variable.
+#' `x` is the discrete variable and the `y` is the continuous variable. See
+#' `compare_list` argument.
+#' @param method_args other arguments passed to function specified in
+#' `method`.
 #' @param compare_list A list of atomic vectors with a length of at least 2. The
 #' entries in the vector are the values on the x-axis (or y-axis) indicating the
 #' comparison among what groups. The comparison is always implemented between
@@ -11,16 +14,9 @@
 #' (x-axis or y-axis), analogously, the continous variable in the position
 #' aesthetics is regarded as the dependent variable. the order specified in the
 #' `compare_list` will be regarded as the level of the independent variable.
-#' @param hide_ns A logical value or a function (can be purrr-style) which take
-#' statistical result as an argument and return a logical value indicating
-#' whether hide this result. If TRUE, this will flag the statistical result
-#' whose `p.value > 0.05` ("p.value" is obtained by `stat_result$p.value`, so
-#' ensure the results returned by `method` have a "p.value" item) with
-#' "...hide..." and `geom_comparetest` will remove rows with "...hide...".
-#' @param method_args other arguments passed to function specified in
-#' `method`.
-#' @param tidy_fn A function or formula which accepts results returned by
-#' function in **method** and return a scalar character.
+#' @param label_fn A function or formula which accepts results returned by
+#' function in **method** and return a scalar character. If you want to hide
+#' some results in the `geom_comparetest`, return "...hide...".
 #'
 #'   If a **function**, it is used as is.
 #'
@@ -32,10 +28,21 @@
 #'   it.
 #'
 #'   If a **string**, the function is looked up in `globalenv()`.
+#'
 #' Notes: if **method** is "none", this can be a list (whose length should equal
-#' to the number of **PANEL**) of labels corresponding to each comparisons in
-#' compare_list, this can be matched by position or names if both **tidy_fn**
-#' and **compare_list** have names.
+#' to the number of **PANEL**) of character labels or an atomic character
+#' directly (in this way, this will be used in every PANEL) corresponding to the
+#' result in each comparisons of compare_list, which will be matched by names if
+#' elements in both **label_fn** and **compare_list** have names otherwise by
+#' position.
+#' @param hide_ns A scalar logical value or a function (can be purrr-style)
+#' which take statistical result as an argument and return a logical value
+#' indicating whether hide this result. If TRUE, this will flag the statistical
+#' result whose `p.value >= sig_level` ("p.value" is obtained by
+#' `stat_result$p.value`, so ensure the results returned by `method` have a
+#' "p.value" item) with "...hide..." and `geom_comparetest` will remove rows
+#' with "...hide...".
+#' @param sig_level The significant level used by `hide_ns`, default: `0.05`.
 #' @inheritParams ggplot2::stat_identity
 #' @section Computed variables:
 #' `stat_comparetest()` provides the following variables, some of which depend on the orientation:
@@ -56,9 +63,13 @@
 #' }
 #' @rdname geom_comparetest
 #' @export
-stat_comparetest <- function(mapping = NULL, data = NULL, method = NULL,
-                             compare_list = NULL, hide_ns = NULL,
-                             method_args = NULL, tidy_fn = NULL,
+stat_comparetest <- function(mapping = NULL, data = NULL,
+                             method = "nonparametric",
+                             method_args = NULL,
+                             compare_list = NULL,
+                             label_fn = NULL,
+                             hide_ns = TRUE, 
+                             sig_level = 0.05,
                              geom = "comparetest", position = "identity",
                              na.rm = FALSE, show.legend = NA,
                              inherit.aes = TRUE, ...) {
@@ -71,7 +82,7 @@ stat_comparetest <- function(mapping = NULL, data = NULL, method = NULL,
             hide_ns = hide_ns,
             compare_list = compare_list,
             method_args = method_args,
-            tidy_fn = tidy_fn,
+            label_fn = label_fn,
             na.rm = na.rm, ...
         )
     )
@@ -91,7 +102,8 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
         )
         data <- ggplot2::flip_data(data, params$flipped_aes)
 
-        # check data with proper values
+        # x and y must exist since we always implement comparison
+        # with formula y ~ x
         has_x <- !(is.null(data$x) && is.null(params$x))
         has_y <- !(is.null(data$y) && is.null(params$y))
         if (!has_x && !has_y) {
@@ -99,21 +111,8 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
         }
 
         msg <- character()
-        if (is.null(params$hide_ns)) {
-            if (is.null(params$method) || identical(params$method, "auto")) {
-                params$hide_ns <- TRUE
-            } else {
-                params$hide_ns <- FALSE
-            }
-            msg <- c(msg, paste0("`hide_ns = \"", params$hide_ns, "\"`"))
-        }
-        # check method and tidy_fn
-        if (is.null(params$method) || identical(params$method, "auto")) {
-            params$method <- "nonparametric"
-            msg <- c(msg, paste0("`method = \"", params$method, "\"`"))
-        }
-        if (is.null(params$tidy_fn)) {
-            params$tidy_fn <- function(x) {
+        if (is.null(params$label_fn)) {
+            params$label_fn <- function(x) {
                 stats::symnum(
                     x$p.value,
                     cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 1),
@@ -122,10 +121,11 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
             }
         }
 
-        if (identical(params$method, "none") && is.list(params$tidy_fn)) {
-            if (!identical(length(params$tidy_fn), length(unique(data$PANEL)))) {
+        # if we don't implement statistical test,
+        if (identical(params$method, "none") && is.list(params$label_fn)) {
+            if (length(params$label_fn) != length(unique(data$PANEL))) {
                 cli::cli_abort(
-                    "{.arg tidy_fn} should be a list with the same number ({length(unique(data$PANEL))}) of {.field PANEL}" # nolint
+                    "{.arg label_fn} should be a list with same length of {.field PANEL} ({length(unique(data$PANEL))})" # nolint
                 )
             }
         }
@@ -158,16 +158,16 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
         )
         data
     },
-    compute_panel = function(data, scales, method = NULL, hide_ns,
+    compute_panel = function(data, scales, method = NULL, hide_ns, sig_level,
                              compare_list = NULL, method_args = list(),
-                             tidy_fn = NULL, na.rm = FALSE,
+                             label_fn = NULL, na.rm = FALSE,
                              flipped_aes = FALSE) {
         data <- ggplot2::flip_data(data, flipped_aes)
         scales <- ggplot2::flip_data(scales, flipped_aes)
         if (!scales$x$is_discrete()) {
             cli::cli_warn(c(
                 "Continuous {.field {ggplot2::flipped_names(params$flipped_aes)$x}} aesthetic",
-                "!" = "{.fn stat_comparetest} will always regard {.field {ggplot2::flipped_names(params$flipped_aes)$x}} as a discrete variable" # nolint
+                "!" = "{.fn stat_comparetest} need a discrete variable in the {.field position} aesthetics" # nolint
             ))
         }
         unique_values <- unclass(unique(data$x))
@@ -177,6 +177,7 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
         # if NULL, all paired comparison will be performed
         if (is.null(compare_list)) {
             compare_list <- utils::combn(unique_values, 2L, simplify = FALSE)
+            compare_list <- lapply(compare_list, sort)
         } else {
             # if user provides compare_list, ensure it is in the same scale of x
             # axis
@@ -185,26 +186,29 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
             })
         }
 
-        if (identical(method, "wilcox.test") || identical(method, "t.test")) {
-            compare_list <- compare_list[
-                lengths(compare_list) == 2L
-            ]
-        }
-        compare_list <- compare_list[
-            vapply(compare_list, function(x) {
-                all(x %in% unique_values)
-            }, logical(1L), USE.NAMES = FALSE)
-        ]
+        # for every comparison, (x, y) is the coordinate of the statistical
+        # results (a string label), the compare_list define the comparison
+        # groups in the x axis. The horizontal segment should span range from
+        # min(comparison) to max(comparison), comparison is the x-axis value
+        # defined in compare_list. 
 
-        # define y postion - the max value
-        max_y_df <- aggregate(y ~ x, data = data, FUN = max, na.rm = TRUE)
-        x_to_maxy <- max_y_df[["y"]]
-        names(x_to_maxy) <- as.character(max_y_df[["x"]])
-        # browser()
+        # for each group in the x-axis, we extract the max y value for the usage
+        # of the tip length.
+        group_x_to_maxy <- aggregate(
+            y ~ x,
+            data = data, FUN = max, na.rm = TRUE
+        )
+        group_x_to_maxy <- structure(
+            group_x_to_maxy$y,
+            names = as.character(group_x_to_maxy$x)
+        )
+
         stat_data <- lapply(compare_list, function(comparison) {
+            # the beard tip should down the y-axis of in all comparison groups
+            # we keep the 
             tip <- tibble::tibble(
                 x = comparison,
-                y = unname(x_to_maxy[as.character(comparison)])
+                y = unname(group_x_to_maxy[as.character(comparison)])
             )
             h_segments <- range(comparison)
             tibble::tibble(
@@ -213,7 +217,7 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
                 # Since the horizontal segments will span across xmin:xmax
                 # the y value should be maximal y among xmin:xmax
                 y = max(unname(
-                    x_to_maxy[as.character(xmin:xmax)]
+                    group_x_to_maxy[as.character(xmin:xmax)]
                 ), na.rm = TRUE),
                 tip = list(tip)
             )
@@ -222,32 +226,35 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
 
         # define label
         if (identical(method, "none")) {
-            if (is.list(tidy_fn)) tidy_fn <- tidy_fn[[data$PANEL[[1L]]]]
-            if (is.character(tidy_fn) || is.list(tidy_fn)) {
+            if (is.list(label_fn)) label_fn <- label_fn[[data$PANEL[[1L]]]]
+            if (is.character(label_fn) || is.list(label_fn)) {
                 label <- vapply(seq_along(compare_list), function(i) {
-                    if (is.null(names(tidy_fn)) || is.null(names(compare_list))) {
-                        label <- tidy_fn[[i]]
+                    if (all(has_name(label_fn)) && all(has_name(compare_list))) {
+                        label <- label_fn[[names(compare_list)[[i]]]]
                     } else {
-                        label <- tidy_fn[[names(compare_list)[[i]]]]
+                        label <- label_fn[[i]]
                     }
                     label
-                }, character(1L))
+                }, character(1L), USE.NAMES = FALSE)
             } else {
-                label <- rlang::rep_along(compare_list, NA_character_)
+                label <- rlang::rep_along(compare_list, "")
             }
         } else {
             if (identical(method, "nonparametric")) {
                 if (unique_numbers > 2L) {
                     method <- "kruskal.test"
-                } else if (identical(unique_numbers, 2L)) {
+                } else if (unique_numbers == 2L) {
                     method <- "wilcox.test"
                 }
             } else if (identical(method, "parametric")) {
                 if (unique_numbers > 2L) {
                     method <- "aov"
-                } else if (identical(unique_numbers, 2L)) {
+                } else if (unique_numbers == 2L) {
                     method <- "t.test"
                 }
+            }
+            if (identical(method, "wilcox.test") || identical(method, "t.test")) {
+                compare_list <- compare_list[lengths(compare_list) == 2L]
             }
             method <- rlang::as_function(method)
             label <- vapply(compare_list, function(comparison) {
@@ -262,16 +269,12 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
                     !!!method_args
                 ))
                 if (is.logical(hide_ns) && isTRUE(hide_ns)) {
-                    if (!is.null(test_res$p.value) && test_res$p.value > 0.05) {
-                        return("...hide...")
-                    }
-                } else if (!is.logical(hide_ns)) {
-                    if (isTRUE(rlang::as_function(hide_ns)(test_res))) {
+                    if (!is.null(test_res$p.value) && test_res$p.value >= sig_level) {
                         return("...hide...")
                     }
                 }
-                as.character(rlang::as_function(tidy_fn)(test_res))
-            }, character(1L))
+                as.character(rlang::as_function(label_fn)(test_res))
+            }, character(1L), USE.NAMES = FALSE)
         }
         stat_data$x <- (stat_data$xmin + stat_data$xmax) / 2L
         stat_data$label <- label

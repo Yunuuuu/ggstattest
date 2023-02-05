@@ -31,7 +31,7 @@
 #' **vjust** for vertical justification.
 #' @param method_args other arguments passed to function specified in
 #' **method**.
-#' @param tidy_fn A function or formula which accepts results returned by
+#' @param label_fn A function or formula which accepts results returned by
 #' function in **method** and return a scalar character.
 #'
 #'   If a **function**, it is used as is.
@@ -57,7 +57,7 @@
 annotation_test <- function(mapping = NULL, data = NULL,
                             method = NULL, formula = NULL,
                             label_x, label_y, hjust = 0.5, vjust = 0.5,
-                            method_args = NULL, tidy_fn = NULL,
+                            method_args = NULL, label_fn = NULL,
                             ..., angle = 0,
                             units = "npc", label_gp = NULL,
                             na.rm = FALSE,
@@ -76,7 +76,7 @@ annotation_test <- function(mapping = NULL, data = NULL,
             method = method,
             formula = formula,
             method_args = method_args,
-            tidy_fn = tidy_fn,
+            label_fn = label_fn,
             hjust = hjust, vjust = vjust, angle = angle,
             units = units, label_gp = label_gp,
             na.rm = na.rm,
@@ -187,11 +187,11 @@ StatAnnotest <- ggplot2::ggproto("StatAnnotest", ggplot2::Stat,
         "yintercept", "z"
     ),
     compute_panel = function(data, scales, method = NULL, formula,
-                             method_args = list(), tidy_fn = NULL,
+                             method_args = list(), label_fn = NULL,
                              label_x, label_y,
                              na.rm = FALSE,
                              flipped_aes = FALSE) {
-        # set defaul value for method and tidy_fn
+        # set defaul value for method and label_fn
         rhs_symbols <- get_formula_symbols(rlang::f_rhs(formula))
         lhs_symbols <- get_formula_symbols(rlang::f_lhs(formula))
         # if (scales$x$is_discrete() && is.numeric(data$y)) {
@@ -224,8 +224,8 @@ StatAnnotest <- ggplot2::ggproto("StatAnnotest", ggplot2::Stat,
                 cli::cli_abort("A {.arg method} argument is needed.")
             }
         }
-        if (is.null(tidy_fn)) {
-            tidy_fn <- annotest_tidy_fn(method)
+        if (is.null(label_fn)) {
+            label_fn <- annotest_label_fn(method)
         }
         if (is.null(method_args)) {
             if (identical(method, "glm") || identical(method, stats::glm)) {
@@ -235,16 +235,16 @@ StatAnnotest <- ggplot2::ggproto("StatAnnotest", ggplot2::Stat,
             }
         }
         method <- rlang::as_function(method)
-        tidy_fn <- rlang::as_function(tidy_fn)
+        label_fn <- rlang::as_function(label_fn)
         stat_res <- rlang::inject(method(
             formula = formula,
             data = data,
             !!!method_args
         ))
-        label <- as.character(tidy_fn(stat_res))
+        label <- as.character(label_fn(stat_res))
         if (!identical(length(label), 1L)) {
             cli::cli_abort(
-                "Function {.arg tidy_fn} should return a length one value."
+                "Function {.arg label_fn} should return a length one value."
             )
         }
         # keep xmin, xmax, ymin and ymax to help scale train data ranges

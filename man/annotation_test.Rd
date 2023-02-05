@@ -14,7 +14,7 @@ annotation_test(
   hjust = 0.5,
   vjust = 0.5,
   method_args = NULL,
-  tidy_fn = NULL,
+  label_fn = NULL,
   ...,
   angle = 0,
   units = "npc",
@@ -61,7 +61,7 @@ location. Possible string values are: "left", "right", "centre", "center",
 \item{method_args}{other arguments passed to function specified in
 \strong{method}.}
 
-\item{tidy_fn}{A function or formula which accepts results returned by
+\item{label_fn}{A function or formula which accepts results returned by
 function in \strong{method} and return a scalar character.
 
 If a \strong{function}, it is used as is.

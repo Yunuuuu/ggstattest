@@ -30,11 +30,12 @@ geom_comparetest(
 stat_comparetest(
   mapping = NULL,
   data = NULL,
-  method = NULL,
-  compare_list = NULL,
-  hide_ns = NULL,
+  method = "nonparametric",
   method_args = NULL,
-  tidy_fn = NULL,
+  compare_list = NULL,
+  label_fn = NULL,
+  hide_ns = TRUE,
+  sig_level = 0.05,
   geom = "comparetest",
   position = "identity",
   na.rm = FALSE,
@@ -132,7 +133,11 @@ which will use "wilcox.test" to compare two groups and use "kruskal.test" to
 compare three or more groups. Support lamda created from a formula. This can
 also be "none" indicates no test will be implemented. The method should
 always accept a \strong{formula} argument whose value will be set as \code{y ~ x}, the
-\code{x} is the discrete variable and the \code{y} is the continuous variable.}
+\code{x} is the discrete variable and the \code{y} is the continuous variable. See
+\code{compare_list} argument.}
+
+\item{method_args}{other arguments passed to function specified in
+\code{method}.}
 
 \item{compare_list}{A list of atomic vectors with a length of at least 2. The
 entries in the vector are the values on the x-axis (or y-axis) indicating the
@@ -142,18 +147,9 @@ the discrete variable (independent variable) in the position aesthetics
 aesthetics is regarded as the dependent variable. the order specified in the
 \code{compare_list} will be regarded as the level of the independent variable.}
 
-\item{hide_ns}{A logical value or a function (can be purrr-style) which take
-statistical result as an argument and return a logical value indicating
-whether hide this result. If TRUE, this will flag the statistical result
-whose \code{p.value > 0.05} ("p.value" is obtained by \code{stat_result$p.value}, so
-ensure the results returned by \code{method} have a "p.value" item) with
-"...hide..." and \code{geom_comparetest} will remove rows with "...hide...".}
-
-\item{method_args}{other arguments passed to function specified in
-\code{method}.}
-
-\item{tidy_fn}{A function or formula which accepts results returned by
-function in \strong{method} and return a scalar character.
+\item{label_fn}{A function or formula which accepts results returned by
+function in \strong{method} and return a scalar character. If you want to hide
+some results in the \code{geom_comparetest}, return "...hide...".
 
 If a \strong{function}, it is used as is.
 
@@ -165,10 +161,23 @@ created from formulas have a special class. Use \code{is_lambda()} to test for
 it.
 
 If a \strong{string}, the function is looked up in \code{globalenv()}.
+
 Notes: if \strong{method} is "none", this can be a list (whose length should equal
-to the number of \strong{PANEL}) of labels corresponding to each comparisons in
-compare_list, this can be matched by position or names if both \strong{tidy_fn}
-and \strong{compare_list} have names.}
+to the number of \strong{PANEL}) of character labels or an atomic character
+directly (in this way, this will be used in every PANEL) corresponding to the
+result in each comparisons of compare_list, which will be matched by names if
+elements in both \strong{label_fn} and \strong{compare_list} have names otherwise by
+position.}
+
+\item{hide_ns}{A scalar logical value or a function (can be purrr-style)
+which take statistical result as an argument and return a logical value
+indicating whether hide this result. If TRUE, this will flag the statistical
+result whose \code{p.value >= sig_level} ("p.value" is obtained by
+\code{stat_result$p.value}, so ensure the results returned by \code{method} have a
+"p.value" item) with "...hide..." and \code{geom_comparetest} will remove rows
+with "...hide...".}
+
+\item{sig_level}{The significant level used by \code{hide_ns}, default: \code{0.05}.}
 
 \item{geom}{The geometric object to use to display the data, either as a
 \code{ggproto} \code{Geom} subclass or as a string naming the geom stripped of the

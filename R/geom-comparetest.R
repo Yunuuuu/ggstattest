@@ -140,7 +140,7 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
             value <- params[[i]]
             i_len <- length(value)
             if (i_len == 1L) {
-                params[[i]] <- rep_len(list(value), panel_number)
+                params[[i]] <- rep.int(list(value), times = panel_number)
             } else if (i_len != panel_number) {
                 fail_parms <- c(fail_parms, i)
             }
@@ -271,7 +271,7 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
                             horizontal_seg$x[[i]],
                             horizontal_seg$xend[[i]]
                         ),
-                        y = rep(horizontal_seg$yend[[i]], times = 2L)
+                        y = rep.int(horizontal_seg$yend[[i]], times = 2L)
                     )
                 }
             )

@@ -1,4 +1,4 @@
-annotest_tidy_fn <- function(method) {
+annotest_label_fn <- function(method) {
     switch(method,
         cor = function(x) {
             paste("Cor", sprintf("%.2g", x), sep = ": ")
