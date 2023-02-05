@@ -14,8 +14,8 @@ geom_comparetest(
   step_increase = NULL,
   tip_length = NULL,
   ...,
-  nudge_x = 0L,
-  nudge_y = 0L,
+  nudge_x = 0,
+  nudge_y = 0,
   parse = FALSE,
   arrow = NULL,
   arrow_fill = NULL,
@@ -94,8 +94,7 @@ Default: \code{rel(0.01)}}
 aesthetics, used to set an aesthetic to a fixed value, like \code{colour = "red"} or \code{size = 3}. They may also be parameters to the paired geom/stat.}
 
 \item{nudge_x, nudge_y}{Horizontal and vertical adjustment to nudge labels by.
-Useful for offsetting text from segments, particularly on discrete scales.
-Cannot be jointly specified with \code{position}.}
+Useful for offsetting text from segments, particularly on discrete scales.}
 
 \item{parse}{If \code{TRUE}, the labels will be parsed into expressions and
 displayed as described in \code{?plotmath}.}

@@ -14,7 +14,6 @@
 #' Default: `rel(0.01)`
 #' @param nudge_x,nudge_y Horizontal and vertical adjustment to nudge labels by.
 #'   Useful for offsetting text from segments, particularly on discrete scales.
-#'   Cannot be jointly specified with `position`.
 #' @param parse If `TRUE`, the labels will be parsed into expressions and
 #'   displayed as described in `?plotmath`.
 #' @param arrow specification for arrow heads, as created by [grid::arrow()].
@@ -87,7 +86,7 @@ geom_comparetest <- function(mapping = NULL, data = NULL,
                              stat = "comparetest", position = "identity",
                              height = NULL, step_increase = NULL,
                              tip_length = NULL,
-                             ..., nudge_x = 0L, nudge_y = 0L,
+                             ..., nudge_x = 0, nudge_y = 0,
                              parse = FALSE, arrow = NULL, arrow_fill = NULL,
                              lineend = "butt", linejoin = "round",
                              na.rm = FALSE,
