@@ -2,7 +2,8 @@
 #'
 #' @param height A list or a numeric vector with length `1` or PANEL number
 #' indicating the value where label start. use [rel][ggplot2::rel] to signal
-#' values as the fraction of maximal height of the panel. Default: `rel(0.05)`
+#' values as the fraction of maximal height of the panel. Will elevate both
+#' label and segment. Default: `rel(0.05)`
 #' @param step_increase A list or a numeric vector  with length `1` or PANEL
 #' number indicating the increase for every additional comparison to minimize
 #' overlap, use [rel][ggplot2::rel] to signal values as the fraction of maximal
@@ -13,7 +14,11 @@
 #' between the horizontal segment and the maximal value of current group.
 #' Default: `rel(0.01)`
 #' @param nudge_x,nudge_y Horizontal and vertical adjustment to nudge labels by.
-#'   Useful for offsetting text from segments, particularly on discrete scales.
+#'   Useful for offsetting text from segments, particularly on discrete scales.A
+#'   list or a numeric vector with length `1` or PANEL number. use
+#'   [rel][ggplot2::rel] to signal values as the fraction of maximal height of
+#'   the panel. Will just nudge the label but not the segment. This different
+#'   from [`geom_text`][ggplot2::geom_text].
 #' @param parse If `TRUE`, the labels will be parsed into expressions and
 #'   displayed as described in `?plotmath`.
 #' @param arrow specification for arrow heads, as created by [grid::arrow()].
@@ -86,16 +91,14 @@ geom_comparetest <- function(mapping = NULL, data = NULL,
                              stat = "comparetest", position = "identity",
                              height = NULL, step_increase = NULL,
                              tip_length = NULL,
-                             ..., nudge_x = 0, nudge_y = 0,
+                             nudge_x = 0, nudge_y = 0,
+                             ..., 
                              parse = FALSE, arrow = NULL, arrow_fill = NULL,
                              lineend = "butt", linejoin = "round",
                              na.rm = FALSE,
                              orientation = NA,
                              show.legend = NA,
                              inherit.aes = TRUE) {
-    if (!missing(nudge_x) || !missing(nudge_y)) {
-        position <- ggplot2::position_nudge(nudge_x, nudge_y)
-    }
     ggplot2::layer(
         data = data,
         mapping = mapping,
@@ -151,9 +154,11 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         if (is.null(params$height)) params$height <- rel(0.05)
         if (is.null(params$step_increase)) params$step_increase <- rel(0.1)
         if (is.null(params$tip_length)) params$tip_length <- rel(0.01)
+        if (is.null(params$nudge_x)) params$nudge_x <- 0L
+        if (is.null(params$nudge_y)) params$nudge_y <- 0L
         panel_number <- length(unique(data$PANEL))
         fail_parms <- character()
-        for (i in c("height", "step_increase", "tip_length")) {
+        for (i in c("height", "step_increase", "tip_length", "nudge_x", "nudge_y")) {
             value <- params[[i]]
             i_len <- length(value)
             if (i_len == 1L) {
@@ -167,11 +172,11 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         }
         params
     },
-    extra_params = c("na.rm", "orientation", "height", "step_increase"),
+    extra_params = c("na.rm", "orientation", "height", "step_increase", "nudge_x", "nudge_y"),
     draw_key = function(...) {
         ggplot2::zeroGrob()
     },
-    setup_data = function(data, params) {
+    setup_data = function(self, data, params) {
         # for height and step_increase will chanage the range of x and y
         # so we shouldn't caculate them in `draw_panel`, otherwise, the scale
         # won't fit the plot

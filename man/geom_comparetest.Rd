@@ -13,9 +13,9 @@ geom_comparetest(
   height = NULL,
   step_increase = NULL,
   tip_length = NULL,
-  ...,
   nudge_x = 0,
   nudge_y = 0,
+  ...,
   parse = FALSE,
   arrow = NULL,
   arrow_fill = NULL,
@@ -77,7 +77,8 @@ settings of the adjustment.}
 
 \item{height}{A list or a numeric vector with length \code{1} or PANEL number
 indicating the value where label start. use \link[ggplot2:element]{rel} to signal
-values as the fraction of maximal height of the panel. Default: \code{rel(0.05)}}
+values as the fraction of maximal height of the panel. Will elevate both
+label and segment. Default: \code{rel(0.05)}}
 
 \item{step_increase}{A list or a numeric vector  with length \code{1} or PANEL
 number indicating the increase for every additional comparison to minimize
@@ -90,11 +91,15 @@ use \link[ggplot2:element]{rel} to signal values as the fraction of the differen
 between the horizontal segment and the maximal value of current group.
 Default: \code{rel(0.01)}}
 
+\item{nudge_x, nudge_y}{Horizontal and vertical adjustment to nudge labels by.
+Useful for offsetting text from segments, particularly on discrete scales.A
+list or a numeric vector with length \code{1} or PANEL number. use
+\link[ggplot2:element]{rel} to signal values as the fraction of maximal height of
+the panel. Will just nudge the label but not the segment. This different
+from \code{\link[ggplot2:geom_text]{geom_text}}.}
+
 \item{...}{Other arguments passed on to \code{\link[ggplot2:layer]{ggplot2::layer()}}. These are often
 aesthetics, used to set an aesthetic to a fixed value, like \code{colour = "red"} or \code{size = 3}. They may also be parameters to the paired geom/stat.}
-
-\item{nudge_x, nudge_y}{Horizontal and vertical adjustment to nudge labels by.
-Useful for offsetting text from segments, particularly on discrete scales.}
 
 \item{parse}{If \code{TRUE}, the labels will be parsed into expressions and
 displayed as described in \code{?plotmath}.}
