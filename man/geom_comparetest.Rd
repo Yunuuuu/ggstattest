@@ -85,8 +85,8 @@ height of the panel.}
 
 \item{tip_length}{A list or a numeric vector  with length \code{1} or PANEL number
 indicating the length of the beard which is drawn down the comparison group,
-use \link[ggplot2:element]{rel} to signal values as the fraction of the maximal
-height of current group.}
+use \link[ggplot2:element]{rel} to signal values as the fraction of the difference
+between the horizontal segment and the maximal value of current group.}
 
 \item{...}{Other arguments passed on to \code{\link[ggplot2:layer]{ggplot2::layer()}}. These are often
 aesthetics, used to set an aesthetic to a fixed value, like \code{colour = "red"} or \code{size = 3}. They may also be parameters to the paired geom/stat.}
@@ -136,8 +136,11 @@ always accept a \strong{formula} argument whose value will be set as \code{y ~ x
 
 \item{compare_list}{A list of atomic vectors with a length of at least 2. The
 entries in the vector are the values on the x-axis (or y-axis) indicating the
-comparison among what groups. the order will be regarded as the level of \code{x}
-variable.}
+comparison among what groups. The comparison is always implemented between
+the discrete variable (independent variable) in the position aesthetics
+(x-axis or y-axis), analogously, the continous variable in the position
+aesthetics is regarded as the dependent variable. the order specified in the
+\code{compare_list} will be regarded as the level of the independent variable.}
 
 \item{hide_ns}{A logical value or a function (can be purrr-style) which take
 statistical result as an argument and return a logical value indicating
@@ -187,9 +190,10 @@ segments underneath label}
 \item{y \emph{or} x}{the y (or x) coordinates for labels, usually equal to
 the max y-axis (x-axis) value span from xmin (ymin) to xmax (ymax)}
 \item{label}{the statistical test results}
-\item{tip}{a list of numerical vector gives the x-axis (discrete position
-aesthetic) coordinates of tip, the tip will be drawn down the position.
-}
+\item{tip}{a list of data.frame gives the coordinates of tip where x
+corresponds to the x axis of current comparison group, and y corresponds to
+the maximal values of current comparison group. the tip length is reverse
+to the y value}
 }
 }
 

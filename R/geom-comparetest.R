@@ -128,11 +128,11 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
             main_is_continuous = FALSE
         )
         if (params$flipped_aes) {
-            if (is.null(params$nudge_x)) params$nudge_x <- 0.05
+            if (is.null(params$nudge_x)) params$nudge_x <- rel(0.05)
             if (is.null(params$nudge_y)) params$nudge_y <- 0
         } else {
             if (is.null(params$nudge_x)) params$nudge_x <- 0
-            if (is.null(params$nudge_y)) params$nudge_y <- 0.05
+            if (is.null(params$nudge_y)) params$nudge_y <- rel(0.05)
         }
         panel_number <- length(unique(data$PANEL))
         fail_parms <- character()
@@ -150,7 +150,7 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         }
         params
     },
-    extra_params = c("na.rm", "orientation"),
+    extra_params = c("na.rm", "orientation", "height", "step_increase"),
     draw_key = function(...) {
         ggplot2::zeroGrob()
     },
@@ -231,7 +231,7 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         data <- do.call("rbind", data)
         data
     },
-    draw_panel = function(data, panel_params, coord, height, step_increase,
+    draw_panel = function(data, panel_params, coord, 
                           tip_length, nudge_x = NULL, nudge_y = NULL,
                           parse = FALSE, arrow = NULL, arrow_fill = NULL,
                           lineend = "butt", linejoin = "round",

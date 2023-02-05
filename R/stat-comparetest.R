@@ -6,8 +6,11 @@
 #' `x` is the discrete variable and the `y` is the continuous variable.
 #' @param compare_list A list of atomic vectors with a length of at least 2. The
 #' entries in the vector are the values on the x-axis (or y-axis) indicating the
-#' comparison among what groups. the order will be regarded as the level of `x`
-#' variable.
+#' comparison among what groups. The comparison is always implemented between
+#' the discrete variable (independent variable) in the position aesthetics
+#' (x-axis or y-axis), analogously, the continous variable in the position
+#' aesthetics is regarded as the dependent variable. the order specified in the
+#' `compare_list` will be regarded as the level of the independent variable.
 #' @param hide_ns A logical value or a function (can be purrr-style) which take
 #' statistical result as an argument and return a logical value indicating
 #' whether hide this result. If TRUE, this will flag the statistical result
