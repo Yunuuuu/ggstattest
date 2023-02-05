@@ -13,9 +13,8 @@
 #' between the horizontal segment and the maximal value of current group.
 #' Default: `rel(0.01)`
 #' @param nudge_x,nudge_y Horizontal and vertical adjustment to nudge labels by.
-#' A list or a numeric vector with length `1` or PANEL number indicating the
-#' value where label start. use [rel][ggplot2::rel] to signal values as the
-#' fraction of maximal height of the panel.
+#'   Useful for offsetting text from segments, particularly on discrete scales.
+#'   Cannot be jointly specified with `position`.
 #' @param parse If `TRUE`, the labels will be parsed into expressions and
 #'   displayed as described in `?plotmath`.
 #' @param arrow specification for arrow heads, as created by [grid::arrow()].
@@ -88,13 +87,16 @@ geom_comparetest <- function(mapping = NULL, data = NULL,
                              stat = "comparetest", position = "identity",
                              height = NULL, step_increase = NULL,
                              tip_length = NULL,
-                             ..., nudge_x = NULL, nudge_y = NULL,
+                             ..., nudge_x = 0L, nudge_y = 0L,
                              parse = FALSE, arrow = NULL, arrow_fill = NULL,
                              lineend = "butt", linejoin = "round",
                              na.rm = FALSE,
                              orientation = NA,
                              show.legend = NA,
                              inherit.aes = TRUE) {
+    if (!missing(nudge_x) || !missing(nudge_y)) {
+        position <- ggplot2::position_nudge(nudge_x, nudge_y)
+    }
     ggplot2::layer(
         data = data,
         mapping = mapping,
@@ -133,7 +135,7 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         size = 3.88, # text size
         angle = 0,
         hjust = 0.5,
-        vjust = 0,
+        vjust = 0.5,
         alpha = NA,
         family = "",
         fontface = 1,
@@ -150,16 +152,9 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         if (is.null(params$height)) params$height <- rel(0.05)
         if (is.null(params$step_increase)) params$step_increase <- rel(0.1)
         if (is.null(params$tip_length)) params$tip_length <- rel(0.01)
-        if (params$flipped_aes) {
-            if (is.null(params$nudge_x)) params$nudge_x <- rel(0.01)
-            if (is.null(params$nudge_y)) params$nudge_y <- 0
-        } else {
-            if (is.null(params$nudge_x)) params$nudge_x <- 0
-            if (is.null(params$nudge_y)) params$nudge_y <- rel(0.01)
-        }
         panel_number <- length(unique(data$PANEL))
         fail_parms <- character()
-        for (i in c("height", "step_increase", "tip_length", "nudge_x", "nudge_y")) {
+        for (i in c("height", "step_increase", "tip_length")) {
             value <- params[[i]]
             i_len <- length(value)
             if (i_len == 1L) {
@@ -173,7 +168,7 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         }
         params
     },
-    extra_params = c("na.rm", "orientation", "height", "step_increase", "nudge_x", "nudge_y"),
+    extra_params = c("na.rm", "orientation", "height", "step_increase"),
     draw_key = function(...) {
         ggplot2::zeroGrob()
     },
@@ -262,8 +257,10 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         data <- ggplot2::flip_data(data, flipped_aes)
 
         non_pos_aes <- setdiff(names(data), c(x_aes, y_aes))
+        label_data <- data[
+            c("x", "y", setdiff(non_pos_aes, "tip"))
+        ]
 
-        label_data <- data[c("x", "y", non_pos_aes)]
         # horizontal segments data, we should keep non-position aesthetic
         horizontal_seg <- data[c("xmin", "xmax", "yend", non_pos_aes)]
         horizontal_seg$y <- horizontal_seg$yend
@@ -332,7 +329,10 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
             vertical_seg$y <- vertical_seg$yend - tip_length
         }
 
-        seg_columns <- c("x", "xend", "y", "yend", non_pos_aes)
+        seg_columns <- c(
+            "x", "xend", "y", "yend",
+            setdiff(non_pos_aes, c("label", "tip"))
+        )
         seg_data <- rbind(
             horizontal_seg[seg_columns],
             vertical_seg[seg_columns]
@@ -343,7 +343,6 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         if (flipped_aes) {
             label_data$angle <- label_data$angle - 90
         }
-
         grid::gList(
             # draw label
             ggplot2::GeomText$draw_panel(

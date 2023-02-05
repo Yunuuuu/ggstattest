@@ -14,8 +14,8 @@ geom_comparetest(
   step_increase = NULL,
   tip_length = NULL,
   ...,
-  nudge_x = NULL,
-  nudge_y = NULL,
+  nudge_x = 0L,
+  nudge_y = 0L,
   parse = FALSE,
   arrow = NULL,
   arrow_fill = NULL,
@@ -94,9 +94,8 @@ Default: \code{rel(0.01)}}
 aesthetics, used to set an aesthetic to a fixed value, like \code{colour = "red"} or \code{size = 3}. They may also be parameters to the paired geom/stat.}
 
 \item{nudge_x, nudge_y}{Horizontal and vertical adjustment to nudge labels by.
-A list or a numeric vector with length \code{1} or PANEL number indicating the
-value where label start. use \link[ggplot2:element]{rel} to signal values as the
-fraction of maximal height of the panel.}
+Useful for offsetting text from segments, particularly on discrete scales.
+Cannot be jointly specified with \code{position}.}
 
 \item{parse}{If \code{TRUE}, the labels will be parsed into expressions and
 displayed as described in \code{?plotmath}.}

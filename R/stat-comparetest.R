@@ -110,7 +110,6 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
             cli::cli_abort("{.fn {snake_class(self)}} requires an {.field x}, {.field y} aesthetic.") # nolint
         }
 
-        msg <- character()
         if (is.null(params$label_fn)) {
             params$label_fn <- function(x) {
                 stats::symnum(
@@ -140,11 +139,6 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
                     "!" = "the number of unique values in {.field {ggplot2::flipped_names(params$flipped_aes)$x}} is less than {val 2}." # nolint
                 )
             )
-        }
-
-        # set default value
-        if (length(msg)) {
-            cli::cli_inform("{.fn stat_comparetest} using {msg}")
         }
         params
     },
