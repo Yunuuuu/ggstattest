@@ -186,6 +186,28 @@ with "...hide...".}
 \description{
 Statistical Compare test
 }
+\section{Aesthetics}{
+
+\code{geom_segment()} understands the following aesthetics (required aesthetics
+are in bold):
+\itemize{
+\item{\verb{*xmin*} \emph{or} \verb{*ymin*}}{the left (or lower) side of horizontal (or
+vertical) segments underneath label}
+\item{\verb{*xmax*} \emph{or} \verb{*ymax*}}{the right (or upper) side of horizontal (or
+vertical) segments underneath label}
+\item{\verb{*y*} \emph{or} \verb{*x*}}{the y (or x) coordinates for labels, usually equal
+to the max y-axis (x-axis) value span from xmin (ymin) to xmax (ymax)}
+\item{\verb{*label*}}{the statistical test results}
+\item{\code{x} \emph{or} \code{y}}{the x (or y) coordinates for labels, usually equal to
+(xmin + xmax) / 2 or (ymin + ymax) / 2}
+\item{\code{tip}}{a list of data.frame gives the coordinates of tip where x or y
+corresponds to the scaled discrete variable or x0 (or y0) is the actual
+value of the discrete variable (one of x or x0 (y or y0) is required) and y
+(or x) (required) corresponds to the maximal values of current comparison
+group. the tip length is reverse to the y value}
+}
+}
+
 \section{Computed variables}{
 
 \code{stat_comparetest()} provides the following variables, some of which depend on the orientation:
@@ -199,8 +221,8 @@ segments underneath label}
 \item{y \emph{or} x}{the y (or x) coordinates for labels, usually equal to
 the max y-axis (x-axis) value span from xmin (ymin) to xmax (ymax)}
 \item{label}{the statistical test results}
-\item{tip}{a list of data.frame gives the coordinates of tip where x
-corresponds to the x axis of current comparison group, and y corresponds to
+\item{tip}{a list of data.frame gives the coordinates of tip where x or y
+corresponds to the scaled discrete variable, and y (or x) corresponds to
 the maximal values of current comparison group. the tip length is reverse
 to the y value}
 }

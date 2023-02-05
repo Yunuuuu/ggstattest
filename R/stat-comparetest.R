@@ -56,8 +56,8 @@
 #'   \item{y *or* x}{the y (or x) coordinates for labels, usually equal to
 #'   the max y-axis (x-axis) value span from xmin (ymin) to xmax (ymax)}
 #'   \item{label}{the statistical test results}
-#'   \item{tip}{a list of data.frame gives the coordinates of tip where x
-#'   corresponds to the x axis of current comparison group, and y corresponds to
+#'   \item{tip}{a list of data.frame gives the coordinates of tip where x or y
+#'   corresponds to the scaled discrete variable, and y (or x) corresponds to
 #'   the maximal values of current comparison group. the tip length is reverse
 #'   to the y value}
 #' }
@@ -137,7 +137,7 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
             cli::cli_warn(
                 c(
                     "Cannot implment statistical test.",
-                    "!" = "the number of unique values in {.field {ggplot2::flipped_names(params$flipped_aes)$x}} is less than 2." # nolint
+                    "!" = "the number of unique values in {.field {ggplot2::flipped_names(params$flipped_aes)$x}} is less than {val 2}." # nolint
                 )
             )
         }

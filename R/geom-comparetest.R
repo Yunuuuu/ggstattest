@@ -32,6 +32,26 @@
 #'   aesthetics, used to set an aesthetic to a fixed value, like `colour =
 #'   "red"` or `size = 3`. They may also be parameters to the paired geom/stat.
 #' @inheritParams ggplot2::layer
+#' @section Aesthetics:
+#' `geom_segment()` understands the following aesthetics (required aesthetics
+#' are in bold):
+#' \itemize{
+#'   \item{`*xmin*` *or* `*ymin*`}{the left (or lower) side of horizontal (or
+#'   vertical) segments underneath label}
+#'   \item{`*xmax*` *or* `*ymax*`}{the right (or upper) side of horizontal (or
+#'   vertical) segments underneath label}
+#'   \item{`*y*` *or* `*x*`}{the y (or x) coordinates for labels, usually equal
+#'   to the max y-axis (x-axis) value span from xmin (ymin) to xmax (ymax)}
+#'   \item{`*label*`}{the statistical test results}
+#'   \item{`x` *or* `y`}{the x (or y) coordinates for labels, usually equal to
+#'   (xmin + xmax) / 2 or (ymin + ymax) / 2}
+#'   \item{`tip`}{a list of data.frame gives the coordinates of tip where x or y
+#'   corresponds to the scaled discrete variable or x0 (or y0) is the actual
+#'   value of the discrete variable (one of x or x0 (y or y0) is required) and y
+#'   (or x) (required) corresponds to the maximal values of current comparison
+#'   group. the tip length is reverse to the y value}
+#' }
+# Learn more about setting these aesthetics in vignette("ggplot2-specs").
 #' @examples
 #' \dontrun{
 #' library(ggplot2)
@@ -231,7 +251,7 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         data <- do.call("rbind", data)
         data
     },
-    draw_panel = function(data, panel_params, coord, 
+    draw_panel = function(self, data, panel_params, coord,
                           tip_length, nudge_x = NULL, nudge_y = NULL,
                           parse = FALSE, arrow = NULL, arrow_fill = NULL,
                           lineend = "butt", linejoin = "round",
@@ -282,6 +302,28 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
             )
         }
         vertical_seg <- tidyr::unnest(vertical_seg, all_of("tip"))
+        if (is.null(vertical_seg$x)) {
+            if (is.null(vertical_seg$x0)) {
+                cli::cli_abort("One of {ggplot2::flipped_names(flipped_aes)$x} or {ggplot2::flipped_names(flipped_aes)$x0} must exist in {.field tip}") # nolint
+            }
+            scales <- NULL
+            pos <- 1L
+            while (is.null(scales)) {
+                env <- parent.frame(pos)
+                has_scale <- any("plot" == names(env))
+                has_scale <- has_scale && any("scales" == names(env$plot))
+                has_scale <- inherits(env$plot$scales, "ScalesList")
+                if (has_scale) {
+                    scales <- env$plot$scales
+                } else {
+                    pos <- pos + 1L
+                }
+            }
+            vertical_seg$x <- scales$get_scales("x")$map(vertical_seg$x0)
+        }
+        if (is.null(vertical_seg$y)) {
+            cli::cli_abort("{ggplot2::flipped_names(flipped_aes)$y} must exist in {.field tip}")
+        }
         vertical_seg$xend <- vertical_seg$x
         if (is_rel(tip_length)) {
             vertical_seg$y <- vertical_seg$yend - unclass(tip_length) *
