@@ -160,7 +160,7 @@ StatAnnotest <- ggplot2::ggproto("StatAnnotest", ggplot2::Stat,
         if (length(msg)) {
             cli::cli_inform("{.fn stat_annotest} using {msg}")
         }
-        formula_symbols <- get_formula_symbols(params$formula)
+        formula_symbols <- get_expr_symbols(params$formula)
         if (!all(formula_symbols %in% names(data))) {
             cli::cli_abort(
                 "Not all variables in {.arg formula = {params$formula}} exist in {.var data}}"
@@ -172,7 +172,7 @@ StatAnnotest <- ggplot2::ggproto("StatAnnotest", ggplot2::Stat,
     setup_data = function(data, params) {
         data <- ggplot2::remove_missing(
             data,
-            vars = get_formula_symbols(params$formula),
+            vars = get_expr_symbols(params$formula),
             na.rm = params$na.rm,
             name = "stat_annotest"
         )
@@ -192,8 +192,8 @@ StatAnnotest <- ggplot2::ggproto("StatAnnotest", ggplot2::Stat,
                              na.rm = FALSE,
                              flipped_aes = FALSE) {
         # set defaul value for method and label_fn
-        rhs_symbols <- get_formula_symbols(rlang::f_rhs(formula))
-        lhs_symbols <- get_formula_symbols(rlang::f_lhs(formula))
+        rhs_symbols <- get_expr_symbols(rlang::f_rhs(formula))
+        lhs_symbols <- get_expr_symbols(rlang::f_lhs(formula))
         # if (scales$x$is_discrete() && is.numeric(data$y)) {
         #     data$x <- factor(data$x)
         # }
