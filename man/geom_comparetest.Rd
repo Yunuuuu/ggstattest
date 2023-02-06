@@ -205,11 +205,11 @@ to the max y-axis (x-axis) value span from xmin (ymin) to xmax (ymax)}
 \item{\verb{*label*}}{The statistical test results}
 \item{\code{x} \emph{or} \code{y}}{The x (or y) coordinates for labels, usually equal to
 (xmin + xmax) / 2 or (ymin + ymax) / 2}
-\item{\code{tip}}{A list of data.frame gives the coordinates of tip where x or y
-corresponds to the scaled discrete variable or x0 (or y0) is the actual
-value of the discrete variable (one of x or x0 (y or y0) is required) and y
-(or x) (required) corresponds to the maximal values of current comparison
-group. the tip length is reverse to the y value}
+\item{\code{tip}}{A list of data.frame gives the coordinates of tip where column
+x (or y) corresponds to the scaled discrete variable and column x0 (or y0)
+is the actual value of the discrete variable (one of x or x0 (y or y0) is
+required) and column y (or x) (required) corresponds to the maximal values
+of current comparison group. the tip length is reverse to the y value}
 }
 }
 

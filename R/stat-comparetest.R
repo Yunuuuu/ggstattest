@@ -205,20 +205,25 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
         stat_data <- lapply(compare_list, function(comparison) {
             # the beard tip should down the y-axis of in all comparison groups
             # we keep the
-            tip <- tibble::tibble(
+            tip <- data.frame(
                 x = comparison,
-                y = unname(x_to_maxy[as.character(comparison)])
+                y = unname(x_to_maxy[as.character(comparison)]),
+                stringsAsFactors = FALSE
             )
-            h_segments <- range(comparison)
-            tibble::tibble(
-                xmin = h_segments[[1L]],
-                xmax = h_segments[[2L]],
-                # Since the horizontal segments will span across xmin:xmax
-                # the y value should be maximal y among xmin:xmax
-                y = max(unname(
-                    x_to_maxy[as.character(xmin:xmax)]
-                ), na.rm = TRUE),
-                tip = list(tip)
+            xmin <- min(comparison, na.rm = TRUE)
+            xmax <- max(comparison, na.rm = TRUE)
+            # Since the horizontal segments will span across xmin:xmax
+            # the y value should be maximal y among xmin:xmax
+            y <- max(unname(
+                x_to_maxy[as.character(xmin:xmax)]
+            ), na.rm = TRUE)
+
+            data.frame(
+                xmin = xmin,
+                xmax = xmax,
+                y = y,
+                tip = I(list(tip)),
+                stringsAsFactors = FALSE
             )
         })
         stat_data <- do.call("rbind", stat_data)

@@ -246,10 +246,11 @@ StatAnnotest <- ggplot2::ggproto("StatAnnotest", ggplot2::Stat,
             )
         }
         # keep xmin, xmax, ymin and ymax to help scale train data ranges
-        tibble::tibble(
+        data.frame(
             label = label,
             label_x = label_x,
-            label_y = label_y
+            label_y = label_y,
+            stringsAsFactors = FALSE
         )
     }
 )

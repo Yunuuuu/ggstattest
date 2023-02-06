@@ -49,11 +49,11 @@
 #'   \item{`*label*`}{The statistical test results}
 #'   \item{`x` *or* `y`}{The x (or y) coordinates for labels, usually equal to
 #'   (xmin + xmax) / 2 or (ymin + ymax) / 2}
-#'   \item{`tip`}{A list of data.frame gives the coordinates of tip where x or y
-#'   corresponds to the scaled discrete variable or x0 (or y0) is the actual
-#'   value of the discrete variable (one of x or x0 (y or y0) is required) and y
-#'   (or x) (required) corresponds to the maximal values of current comparison
-#'   group. the tip length is reverse to the y value}
+#'   \item{`tip`}{A list of data.frame gives the coordinates of tip where column
+#'   x (or y) corresponds to the scaled discrete variable and column x0 (or y0)
+#'   is the actual value of the discrete variable (one of x or x0 (y or y0) is
+#'   required) and column y (or x) (required) corresponds to the maximal values
+#'   of current comparison group. the tip length is reverse to the y value}
 #' }
 # Learn more about setting these aesthetics in vignette("ggplot2-specs").
 #' @examples
@@ -92,7 +92,7 @@ geom_comparetest <- function(mapping = NULL, data = NULL,
                              height = NULL, step_increase = NULL,
                              tip_length = NULL,
                              nudge_x = 0, nudge_y = 0,
-                             ..., 
+                             ...,
                              parse = FALSE, arrow = NULL, arrow_fill = NULL,
                              lineend = "butt", linejoin = "round",
                              na.rm = FALSE,
@@ -277,24 +277,34 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         if (is.null(vertical_seg$tip)) {
             # for NULL tip data, the tip should vertically down the `x` and
             # `xend` of horizontal lines
-            vertical_seg$tip <- lapply(
+            tip_data <- lapply(
                 seq_len(nrow(horizontal_seg)), function(i) {
-                    tibble::tibble(
-                        x = c(
-                            horizontal_seg$x[[i]],
-                            horizontal_seg$xend[[i]]
-                        ),
-                        y = rep.int(horizontal_seg$yend[[i]], times = 2L)
+                    data.frame(
+                        x = c(horizontal_seg$x[[i]], horizontal_seg$xend[[i]]),
+                        y = rep.int(horizontal_seg$yend[[i]], times = 2L),
+                        stringsAsFactors = FALSE
                     )
                 }
             )
         } else {
-            vertical_seg$tip <- lapply(
-                vertical_seg$tip, ggplot2::flip_data,
-                flipped_aes
-            )
+            tip_data <- lapply(vertical_seg$tip, function(data, flipped_aes) {
+                data <- ggplot2::flip_data(data, flip = flipped_aes)
+                data[intersect(names(data), c("x", "x0", "y"))]
+            }, flipped_aes)
+            vertical_seg$tip <- NULL
         }
-        vertical_seg <- tidyr::unnest(vertical_seg, all_of("tip"))
+        # unnest vertical_seg data with reference to tip_data
+        row_numbers <- vapply(tip_data, nrow, integer(1L))
+        tip_data <- do.call("rbind", tip_data)
+        vertical_seg <- vertical_seg[
+            rep(seq_len(nrow(vertical_seg)), times = row_numbers),
+        ]
+        vertical_seg <- cbind(vertical_seg, tip_data)
+
+        # check data 
+        if (is.null(vertical_seg$y)) {
+            cli::cli_abort("{ggplot2::flipped_names(flipped_aes)$y} must exist in {.field tip}")
+        }
         if (is.null(vertical_seg$x)) {
             if (is.null(vertical_seg$x0)) {
                 cli::cli_abort("One of {ggplot2::flipped_names(flipped_aes)$x} or {ggplot2::flipped_names(flipped_aes)$x0} must exist in {.field tip}") # nolint
@@ -313,9 +323,6 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
                 }
             }
             vertical_seg$x <- scales$get_scales("x")$map(vertical_seg$x0)
-        }
-        if (is.null(vertical_seg$y)) {
-            cli::cli_abort("{ggplot2::flipped_names(flipped_aes)$y} must exist in {.field tip}")
         }
         vertical_seg$xend <- vertical_seg$x
         if (is_rel(tip_length)) {

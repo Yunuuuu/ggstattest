@@ -13,9 +13,7 @@ Imports:
     ggplot2,
     grid,
     rlang,
-    scales,
-    tibble,
-    tidyr
+    scales
 Suggests: 
     stats
 Config/testthat/edition: 3
