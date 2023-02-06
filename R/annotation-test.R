@@ -201,9 +201,9 @@ StatAnnotest <- ggplot2::ggproto("StatAnnotest", ggplot2::Stat,
         #     data$y <- factor(data$y)
         # }
         if (is.null(method)) {
-            if (identical(length(lhs_symbols), 1L)) {
+            if (length(lhs_symbols) == 1L) {
                 if (!aes_is_discrete(data, scales, lhs_symbols)) {
-                    if (identical(length(rhs_symbols), 1L)) {
+                    if (length(rhs_symbols) == 1L) {
                         if (aes_is_discrete(data, scales, rhs_symbols)) {
                             if (length(unique(data[[rhs_symbols]])) > 2L) {
                                 method <- "kruskal.test"
@@ -236,7 +236,7 @@ StatAnnotest <- ggplot2::ggproto("StatAnnotest", ggplot2::Stat,
         }
         method <- rlang::as_function(method)
         stat_res <- rlang::inject(
-            method(formula = !!formula, data = !!data, !!!method_args)
+            method(formula = !!formula, data = data, !!!method_args)
         )
         label_fn <- rlang::as_function(label_fn)
         label <- as.character(label_fn(stat_res))
@@ -256,7 +256,7 @@ StatAnnotest <- ggplot2::ggproto("StatAnnotest", ggplot2::Stat,
 )
 
 aes_is_discrete <- function(data, scales, aes_name) {
-    if (aes_name %in% c("x", "y")) {
+    if (any(aes_name == c("x", "y"))) {
         scales[[aes_name]]$is_discrete()
     } else {
         is.character(data[[aes_name]]) || is.factor(data[[aes_name]])
