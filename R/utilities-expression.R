@@ -1,12 +1,15 @@
 get_expr_symbols <- function(x) {
-    symbols <- switch(expr_type(x),
-        # special cases
+    type_x <- expr_type(x)
+    symbols <- switch(type_x,
         # for missing argument in pairlist
         missing = ,
+        # seems like this will always live in the end of anonymous function call
+        integer = ,
         constant = character(0L),
         symbol = rlang::as_string(x),
         call = lapply(x[-1L], get_expr_symbols),
-        pairlist = lapply(x, get_expr_symbols)
+        pairlist = lapply(x, get_expr_symbols),
+        cli::cli_abort("Don't know how to handle type {.cls {type_x}}.")
     )
     unlist(symbols, recursive = TRUE, use.names = FALSE)
 }
