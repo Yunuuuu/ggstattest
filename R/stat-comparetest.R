@@ -1,22 +1,23 @@
 #' @param method the method used to implement test. Defaults to "nonparametric",
-#' which will use "wilcox.test" to compare two groups and use "kruskal.test" to
-#' compare three or more groups. Support lamda created from a formula. This can
-#' also be "none" indicates no test will be implemented. The method should
-#' always accept a **formula** argument whose value will be set as `y ~ x`, the
-#' `x` is the discrete variable and the `y` is the continuous variable. See
-#' `compare_list` argument.
+#'   which will use "wilcox.test" to compare two groups and use "kruskal.test"
+#'   to compare three or more groups. Support lamda created from a formula. This
+#'   can also be "none" indicates no test will be implemented. The method should
+#'   always accept a **formula** argument whose value will be set as `y ~ x`,
+#'   the `x` is the discrete variable and the `y` is the continuous variable.
+#'   See `compare_list` argument.
 #' @param method_args other arguments passed to function specified in
-#' `method`.
+#'   `method`.
 #' @param compare_list A list of atomic vectors with a length of at least 2. The
-#' entries in the vector are the values on the x-axis (or y-axis) indicating the
-#' comparison among what groups. The comparison is always implemented between
-#' the discrete variable (independent variable) in the position aesthetics
-#' (x-axis or y-axis), analogously, the continous variable in the position
-#' aesthetics is regarded as the dependent variable. the order specified in the
-#' `compare_list` will be regarded as the level of the independent variable.
+#'   entries in the vector are the values on the x-axis (or y-axis) indicating
+#'   the comparison among what groups. The comparison is always implemented
+#'   between the discrete variable (independent variable) in the position
+#'   aesthetics (x-axis or y-axis), analogously, the continous variable in the
+#'   position aesthetics is regarded as the dependent variable. the order
+#'   specified in the `compare_list` will be regarded as the level of the
+#'   independent variable.
 #' @param label_fn A function or formula which accepts results returned by
-#' function in **method** and return a scalar character. If you want to hide
-#' some results in the `geom_comparetest`, return "...hide...".
+#'   function in **method** and return a scalar character. If you want to hide
+#'   some results in the `geom_comparetest`, return "...hide...".
 #'
 #'   If a **function**, it is used as is.
 #'
@@ -36,12 +37,12 @@
 #' elements in both **label_fn** and **compare_list** have names otherwise by
 #' position.
 #' @param hide_ns A scalar logical value or a function (can be purrr-style)
-#' which take statistical result as an argument and return a logical value
-#' indicating whether hide this result. If TRUE, this will flag the statistical
-#' result whose `p.value >= sig_level` ("p.value" is obtained by
-#' `stat_result$p.value`, so ensure the results returned by `method` have a
-#' "p.value" item) with "...hide..." and `geom_comparetest` will remove rows
-#' with "...hide...".
+#'   which take statistical result as an argument and return a logical value
+#'   indicating whether hide this result. If TRUE, this will flag the
+#'   statistical result whose `p.value >= sig_level` ("p.value" is obtained by
+#'   `stat_result$p.value`, so ensure the results returned by `method` have a
+#'   "p.value" item) with "...hide..." and `geom_comparetest` will remove rows
+#'   with "...hide...".
 #' @param sig_level The significant level used by `hide_ns`. Default: `0.05`.
 #' @inheritParams ggplot2::stat_identity
 #' @section Computed variables:

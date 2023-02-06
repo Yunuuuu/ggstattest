@@ -133,23 +133,24 @@ that define both data and aesthetics and shouldn't inherit behaviour from
 the default plot specification, e.g. \code{\link[ggplot2:borders]{borders()}}.}
 
 \item{method}{the method used to implement test. Defaults to "nonparametric",
-which will use "wilcox.test" to compare two groups and use "kruskal.test" to
-compare three or more groups. Support lamda created from a formula. This can
-also be "none" indicates no test will be implemented. The method should
-always accept a \strong{formula} argument whose value will be set as \code{y ~ x}, the
-\code{x} is the discrete variable and the \code{y} is the continuous variable. See
-\code{compare_list} argument.}
+which will use "wilcox.test" to compare two groups and use "kruskal.test"
+to compare three or more groups. Support lamda created from a formula. This
+can also be "none" indicates no test will be implemented. The method should
+always accept a \strong{formula} argument whose value will be set as \code{y ~ x},
+the \code{x} is the discrete variable and the \code{y} is the continuous variable.
+See \code{compare_list} argument.}
 
 \item{method_args}{other arguments passed to function specified in
 \code{method}.}
 
 \item{compare_list}{A list of atomic vectors with a length of at least 2. The
-entries in the vector are the values on the x-axis (or y-axis) indicating the
-comparison among what groups. The comparison is always implemented between
-the discrete variable (independent variable) in the position aesthetics
-(x-axis or y-axis), analogously, the continous variable in the position
-aesthetics is regarded as the dependent variable. the order specified in the
-\code{compare_list} will be regarded as the level of the independent variable.}
+entries in the vector are the values on the x-axis (or y-axis) indicating
+the comparison among what groups. The comparison is always implemented
+between the discrete variable (independent variable) in the position
+aesthetics (x-axis or y-axis), analogously, the continous variable in the
+position aesthetics is regarded as the dependent variable. the order
+specified in the \code{compare_list} will be regarded as the level of the
+independent variable.}
 
 \item{label_fn}{A function or formula which accepts results returned by
 function in \strong{method} and return a scalar character. If you want to hide
@@ -175,8 +176,8 @@ position.}
 
 \item{hide_ns}{A scalar logical value or a function (can be purrr-style)
 which take statistical result as an argument and return a logical value
-indicating whether hide this result. If TRUE, this will flag the statistical
-result whose \code{p.value >= sig_level} ("p.value" is obtained by
+indicating whether hide this result. If TRUE, this will flag the
+statistical result whose \code{p.value >= sig_level} ("p.value" is obtained by
 \code{stat_result$p.value}, so ensure the results returned by \code{method} have a
 "p.value" item) with "...hide..." and \code{geom_comparetest} will remove rows
 with "...hide...".}
