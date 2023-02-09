@@ -309,6 +309,8 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
             if (is.null(vertical_seg$x0)) {
                 cli::cli_abort("One of {ggplot2::flipped_names(flipped_aes)$x} or {ggplot2::flipped_names(flipped_aes)$x0} must exist in {.field tip}") # nolint
             }
+            # get scale objects from the draw function
+            # modified from https://github.com/tidyverse/ggplot2/issues/3116#issue-406130577
             scales <- NULL
             pos <- 1L
             while (is.null(scales)) {
