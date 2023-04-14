@@ -169,15 +169,16 @@ StatAnnotest <- ggplot2::ggproto("StatAnnotest", ggplot2::Stat,
         params
     },
     extra_params = c("na.rm", "orientation"),
-    setup_data = function(data, params) {
-        data <- ggplot2::remove_missing(
-            data,
-            vars = get_expr_symbols(params$formula),
-            na.rm = params$na.rm,
-            name = "stat_annotest"
-        )
-        data
-    },
+    # let statistical test to handle NA value
+    # setup_data = function(data, params) {
+    #     data <- ggplot2::remove_missing(
+    #         data,
+    #         vars = get_expr_symbols(params$formula),
+    #         na.rm = params$na.rm,
+    #         name = "stat_annotest"
+    #     )
+    #     data
+    # },
     optional_aes = c(
         "adj", "alpha", "angle", "bg", "cex", "col", "color",
         "colour", "fg", "fill", "group", "hjust", "label", "linetype", "lower",
@@ -245,10 +246,8 @@ StatAnnotest <- ggplot2::ggproto("StatAnnotest", ggplot2::Stat,
                 "Function {.arg label_fn} should return a scalar string."
             )
         }
-        # keep xmin, xmax, ymin and ymax to help scale train data ranges
         data.frame(
-            label = label,
-            label_x = label_x,
+            label = label, label_x = label_x,
             label_y = label_y,
             stringsAsFactors = FALSE
         )
@@ -261,4 +260,66 @@ aes_is_discrete <- function(data, scales, aes_name) {
     } else {
         is.character(data[[aes_name]]) || is.factor(data[[aes_name]])
     }
+}
+
+get_expr_symbols <- function(x) {
+    type_x <- expr_type(x)
+    symbols <- switch(type_x,
+        # for missing argument in pairlist
+        missing = ,
+        # seems like this will always live in the end of anonymous function call
+        integer = ,
+        constant = character(0L),
+        symbol = rlang::as_string(x),
+        call = lapply(x[-1L], get_expr_symbols),
+        pairlist = lapply(x, get_expr_symbols),
+        cli::cli_abort("Don't know how to handle type {.cls {type_x}}.")
+    )
+    unlist(symbols, recursive = TRUE, use.names = FALSE)
+}
+
+expr_type <- function(x) {
+    if (rlang::is_missing(x)) {
+        "missing"
+    } else if (rlang::is_syntactic_literal(x)) {
+        "constant"
+    } else if (is.symbol(x)) {
+        "symbol"
+    } else if (is.call(x)) {
+        "call"
+    } else if (is.pairlist(x)) {
+        "pairlist"
+    } else {
+        typeof(x)
+    }
+}
+
+annotest_label_fn <- function(method) {
+    switch(method,
+        cor = function(x) {
+            paste("Cor", sprintf("%.2g", x), sep = ": ")
+        },
+        cor.test = function(x) {
+            paste(
+                c(names(x$estimate), "Pvalue"),
+                sprintf("%.2g", c(x$estimate, x$p.value)),
+                sep = ": ",
+                collapse = "\n"
+            )
+        },
+        chisq.test = ,
+        t.test = ,
+        kruskal.test = ,
+        wilcox.test = function(x) {
+            paste(
+                c(names(x$statistic), "Pvalue"),
+                sprintf("%.2g", c(x$statistic, x$p.value)),
+                sep = ": ",
+                collapse = "\n"
+            )
+        },
+        function(x) {
+            paste("Pvalue", sprintf("%.2g", x$p.value), sep = ": ")
+        }
+    )
 }
