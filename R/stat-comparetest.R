@@ -182,18 +182,17 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
             })
         }
 
-        if (identical(method, "wilcox.test") || identical(method, "t.test")) {
+        if (is_binary_comparison(method)) {
             compare_list <- compare_list[lengths(compare_list) == 2L]
         }
 
-        # for every comparison, (x, y) is the coordinate of the statistical
-        # results (a string label), the compare_list define the comparison
-        # groups in the x axis. The horizontal segment should span range from
-        # min(comparison) to max(comparison), comparison is the x-axis value
-        # defined in compare_list.
+        # to plot a statistical test results, we need (x, y, label)
+        # x, y stand for the coordinate to put the statistical results (a string
+        # label)
+        # the compare_list define the comparison groups position in the x axis.
+        # The horizontal segment should span range from min(x) to max(x)
 
-        # for each group in the x-axis, we extract the max y value for the usage
-        # of the tip length.
+        # for each group in the x-axis, we extract the max y value
         x_to_maxy <- aggregate(
             y ~ x,
             data = data, FUN = max, na.rm = TRUE
@@ -203,17 +202,23 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
             names = as.character(x_to_maxy$x)
         )
         stat_data <- lapply(compare_list, function(comparison) {
-            # the beard tip should down the y-axis of in all comparison groups
-            # we keep the
+            # the beard tip should down the y-axis of every x (define the
+            # comparison group), we save the group x and the corresponding
+            # maximal y for the usage of GeomComparetest
             tip <- data.frame(
                 x = comparison,
                 y = unname(x_to_maxy[as.character(comparison)]),
                 stringsAsFactors = FALSE
             )
+            # the label will be deposited in the median of range(comparison)
+            # Now, we save the minimal and maximal value of x
             xmin <- min(comparison, na.rm = TRUE)
             xmax <- max(comparison, na.rm = TRUE)
             # Since the horizontal segments will span across xmin:xmax
             # the y value should be maximal y among xmin:xmax
+            # if we only use the maximal y of xmin and xmax, the horizontal
+            # segments may overlap with values of group x (between xmin and
+            # xmax)
             y <- max(unname(
                 x_to_maxy[as.character(xmin:xmax)]
             ), na.rm = TRUE)
@@ -233,7 +238,7 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
             if (is.list(label_fn)) label_fn <- label_fn[[data$PANEL[[1L]]]]
             if (is.character(label_fn) || is.list(label_fn)) {
                 label <- vapply(seq_along(compare_list), function(i) {
-                    if (all(has_name(label_fn)) && all(has_name(compare_list))) {
+                    if (all(rlang::have_name(label_fn)) && all(rlang::have_name(compare_list))) {
                         label <- label_fn[[names(compare_list)[[i]]]]
                     } else {
                         label <- label_fn[[i]]
@@ -259,33 +264,43 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
             }
             if (length(compare_list)) {
                 method <- rlang::as_function(method)
-                label <- vapply(compare_list, function(group_x) {
-                    test_data <- data[data$x %in% group_x, ]
+                label_fn <- rlang::as_function(label_fn)
+                label <- vapply(compare_list, function(comparison) {
+                    test_data <- data[data$x %in% comparison, ]
                     # since in ggplot2, position aesthetics are always regarded
                     # as numerical value, we transform it into factor to perform
                     # comparison
-                    test_data$x <- factor(test_data$x, levels = group_x)
+                    test_data$x <- factor(test_data$x, levels = comparison)
                     test_res <- rlang::inject(method(
                         formula = y ~ x,
                         data = test_data,
                         !!!method_args
                     ))
-                    if (is.logical(hide_ns) && isTRUE(hide_ns)) {
+                    if (isTRUE(hide_ns)) {
                         if (!is.null(test_res$p.value) && test_res$p.value >= sig_level) {
                             return("...hide...")
                         }
                     }
-                    as.character(rlang::as_function(label_fn)(test_res))
+                    as.character(label_fn(test_res))
                 }, character(1L), USE.NAMES = FALSE)
             }
         }
         stat_data$x <- (stat_data$xmin + stat_data$xmax) / 2L
         stat_data$label <- label
-        stat_data$tip <- lapply(
-            stat_data$tip, ggplot2::flip_data,
+        stat_data$tip <- lapply(stat_data$tip,
+            ggplot2::flip_data,
             flip = flipped_aes
         )
         stat_data$flipped_aes <- flipped_aes
         ggplot2::flip_data(stat_data, flipped_aes)
     }
 )
+
+is_binary_comparison <- function(x) {
+    identical(x, "wilcox.test") ||
+        identical(x, "t.test") ||
+        identical(x, stats::wilcox.test) ||
+        identical(x, stats::t.test) ||
+        identical(x, quote(wilcox.test)) ||
+        identical(x, quote(t.test))
+}

@@ -277,15 +277,13 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         if (is.null(vertical_seg$tip)) {
             # for NULL tip data, the tip should vertically down the `x` and
             # `xend` of horizontal lines
-            tip_data <- lapply(
-                seq_len(nrow(horizontal_seg)), function(i) {
-                    data.frame(
-                        x = c(horizontal_seg$x[[i]], horizontal_seg$xend[[i]]),
-                        y = rep.int(horizontal_seg$yend[[i]], times = 2L),
-                        stringsAsFactors = FALSE
-                    )
-                }
-            )
+            tip_data <- lapply(seq_len(nrow(horizontal_seg)), function(i) {
+                data.frame(
+                    x = c(horizontal_seg$x[[i]], horizontal_seg$xend[[i]]),
+                    y = rep.int(horizontal_seg$yend[[i]], times = 2L),
+                    stringsAsFactors = FALSE
+                )
+            })
         } else {
             tip_data <- lapply(vertical_seg$tip, function(data, flipped_aes) {
                 data <- ggplot2::flip_data(data, flip = flipped_aes)
@@ -301,7 +299,7 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         ]
         vertical_seg <- cbind(vertical_seg, tip_data)
 
-        # check data 
+        # check data
         if (is.null(vertical_seg$y)) {
             cli::cli_abort("{ggplot2::flipped_names(flipped_aes)$y} must exist in {.field tip}")
         }
