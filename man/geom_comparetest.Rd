@@ -167,8 +167,8 @@ it.
 
 If a \strong{string}, the function is looked up in \code{globalenv()}.
 
-Notes: if \strong{method} is "none", this can be a list (whose length should equal
-to the number of \strong{PANEL}) of character labels or an atomic character
+Notes: if \strong{method} is "none", this can be a list (whose length should be
+equal to the number of \strong{PANEL}) of character labels or an atomic character
 directly (in this way, this will be used in every PANEL) corresponding to the
 result in each comparisons of compare_list, which will be matched by names if
 elements in both \strong{label_fn} and \strong{compare_list} have names otherwise by
@@ -177,10 +177,10 @@ position.}
 \item{hide_ns}{A scalar logical value or a function (can be purrr-style)
 which take statistical result as an argument and return a logical value
 indicating whether hide this result. If TRUE, this will flag the
-statistical result whose \code{p.value >= sig_level} ("p.value" is obtained by
-\code{stat_result$p.value}, so ensure the results returned by \code{method} have a
-"p.value" item) with "...hide..." and \code{geom_comparetest} will remove rows
-with "...hide...".}
+insignificant statistical result (\code{p.value >= sig_level}: "p.value" is
+obtained by \code{stat_result$p.value}, so ensure the results returned by
+\code{method} have a "p.value" item) with "...hide..." and \code{geom_comparetest}
+will remove rows with "...hide...".}
 
 \item{sig_level}{The significant level used by \code{hide_ns}. Default: \code{0.05}.}
 
@@ -196,14 +196,14 @@ Statistical Compare test
 \code{geom_segment()} understands the following aesthetics (required aesthetics
 are in bold):
 \describe{
-\item{\verb{*xmin*} \emph{or} \verb{*ymin*}}{The left (or lower) side of horizontal (or
+\item{\code{xmin} or \code{ymin}}{The left (or lower) side of horizontal (or
 vertical) segments underneath label}
-\item{\verb{*xmax*} \emph{or} \verb{*ymax*}}{The right (or upper) side of horizontal (or
+\item{\code{xmax} or \code{ymax}}{The right (or upper) side of horizontal (or
 vertical) segments underneath label}
-\item{\verb{*y*} \emph{or} \verb{*x*}}{The y (or x) coordinates for labels, usually equal
+\item{\code{y} or \code{x}}{The y (or x) coordinates for labels, usually equal
 to the max y-axis (x-axis) value span from xmin (ymin) to xmax (ymax)}
-\item{\verb{*label*}}{The statistical test results}
-\item{\code{x} \emph{or} \code{y}}{The x (or y) coordinates for labels, usually equal to
+\item{\code{label}}{The statistical test results}
+\item{\code{x} or \code{y}}{The x (or y) coordinates for labels, usually equal to
 (xmin + xmax) / 2 or (ymin + ymax) / 2}
 \item{\code{tip}}{A list of data.frame gives the coordinates of tip where column
 x (or y) corresponds to the scaled discrete variable and column x0 (or y0)
@@ -217,16 +217,16 @@ of current comparison group. the tip length is reverse to the y value}
 
 \code{stat_comparetest()} provides the following variables, some of which depend on the orientation:
 \describe{
-\item{xmin \emph{or} ymin}{The left (or lower) side of horizontal (or vertical)
-segments underneath label}
-\item{xmax \emph{or} ymax}{The right (or upper) side of horizontal (or vertical)
-segments underneath label}
-\item{x \emph{or} y}{The x (or y) coordinates for labels, usually equal to
+\item{\code{xmin} \emph{or} \code{ymin}}{The left (or lower) side of horizontal (or
+vertical) segments underneath label}
+\item{\code{xmax} \emph{or} \code{ymax}}{The right (or upper) side of horizontal (or
+vertical) segments underneath label}
+\item{\code{x} \emph{or} \code{y}}{The x (or y) coordinates for labels, usually equal to
 \code{(xmin + xmax) / 2} or \code{(ymin + ymax) / 2}}
-\item{y \emph{or} x}{The y (or x) coordinates for labels, usually equal to
+\item{\code{y} \emph{or} \code{x}}{The y (or x) coordinates for labels, usually equal to
 the max y-axis (x-axis) value span from xmin (ymin) to xmax (ymax)}
-\item{label}{The statistical test results}
-\item{tip}{A list of data.frame gives the coordinates of tip where x or y
+\item{\code{label}}{The statistical test results}
+\item{\code{tip}}{A list of data.frame gives the coordinates of tip where x or y
 corresponds to the scaled discrete variable, and y (or x) corresponds to
 the maximal values of current comparison group. the tip length is reverse
 to the y value}

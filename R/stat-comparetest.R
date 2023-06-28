@@ -30,8 +30,8 @@
 #'
 #'   If a **string**, the function is looked up in `globalenv()`.
 #'
-#' Notes: if **method** is "none", this can be a list (whose length should equal
-#' to the number of **PANEL**) of character labels or an atomic character
+#' Notes: if **method** is "none", this can be a list (whose length should be
+#' equal to the number of **PANEL**) of character labels or an atomic character
 #' directly (in this way, this will be used in every PANEL) corresponding to the
 #' result in each comparisons of compare_list, which will be matched by names if
 #' elements in both **label_fn** and **compare_list** have names otherwise by
@@ -39,25 +39,25 @@
 #' @param hide_ns A scalar logical value or a function (can be purrr-style)
 #'   which take statistical result as an argument and return a logical value
 #'   indicating whether hide this result. If TRUE, this will flag the
-#'   statistical result whose `p.value >= sig_level` ("p.value" is obtained by
-#'   `stat_result$p.value`, so ensure the results returned by `method` have a
-#'   "p.value" item) with "...hide..." and `geom_comparetest` will remove rows
-#'   with "...hide...".
+#'   insignificant statistical result (`p.value >= sig_level`: "p.value" is
+#'   obtained by `stat_result$p.value`, so ensure the results returned by
+#'   `method` have a "p.value" item) with "...hide..." and `geom_comparetest`
+#'   will remove rows with "...hide...".
 #' @param sig_level The significant level used by `hide_ns`. Default: `0.05`.
 #' @inheritParams ggplot2::stat_identity
 #' @section Computed variables:
 #' `stat_comparetest()` provides the following variables, some of which depend on the orientation:
 #' \describe{
-#'   \item{xmin *or* ymin}{The left (or lower) side of horizontal (or vertical)
-#'   segments underneath label}
-#'   \item{xmax *or* ymax}{The right (or upper) side of horizontal (or vertical)
-#'   segments underneath label}
-#'   \item{x *or* y}{The x (or y) coordinates for labels, usually equal to
+#'   \item{`xmin` *or* `ymin`}{The left (or lower) side of horizontal (or
+#'   vertical) segments underneath label}
+#'   \item{`xmax` *or* `ymax`}{The right (or upper) side of horizontal (or
+#'   vertical) segments underneath label}
+#'   \item{`x` *or* `y`}{The x (or y) coordinates for labels, usually equal to
 #'   `(xmin + xmax) / 2` or `(ymin + ymax) / 2`}
-#'   \item{y *or* x}{The y (or x) coordinates for labels, usually equal to
+#'   \item{`y` *or* `x`}{The y (or x) coordinates for labels, usually equal to
 #'   the max y-axis (x-axis) value span from xmin (ymin) to xmax (ymax)}
-#'   \item{label}{The statistical test results}
-#'   \item{tip}{A list of data.frame gives the coordinates of tip where x or y
+#'   \item{`label`}{The statistical test results}
+#'   \item{`tip`}{A list of data.frame gives the coordinates of tip where x or y
 #'   corresponds to the scaled discrete variable, and y (or x) corresponds to
 #'   the maximal values of current comparison group. the tip length is reverse
 #'   to the y value}
@@ -219,9 +219,10 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
             # if we only use the maximal y of xmin and xmax, the horizontal
             # segments may overlap with values of group x (between xmin and
             # xmax)
-            y <- max(unname(
-                x_to_maxy[as.character(xmin:xmax)]
-            ), na.rm = TRUE)
+            y <- max(
+                unname(x_to_maxy[as.character(xmin:xmax)]),
+                na.rm = TRUE
+            )
 
             data.frame(
                 xmin = xmin,

@@ -40,14 +40,14 @@
 #' `geom_segment()` understands the following aesthetics (required aesthetics
 #' are in bold):
 #' \describe{
-#'   \item{`*xmin*` *or* `*ymin*`}{The left (or lower) side of horizontal (or
+#'   \item{`xmin` or `ymin`}{The left (or lower) side of horizontal (or
 #'   vertical) segments underneath label}
-#'   \item{`*xmax*` *or* `*ymax*`}{The right (or upper) side of horizontal (or
+#'   \item{`xmax` or `ymax`}{The right (or upper) side of horizontal (or
 #'   vertical) segments underneath label}
-#'   \item{`*y*` *or* `*x*`}{The y (or x) coordinates for labels, usually equal
+#'   \item{`y` or `x`}{The y (or x) coordinates for labels, usually equal
 #'   to the max y-axis (x-axis) value span from xmin (ymin) to xmax (ymax)}
-#'   \item{`*label*`}{The statistical test results}
-#'   \item{`x` *or* `y`}{The x (or y) coordinates for labels, usually equal to
+#'   \item{`label`}{The statistical test results}
+#'   \item{`x` or `y`}{The x (or y) coordinates for labels, usually equal to
 #'   (xmin + xmax) / 2 or (ymin + ymax) / 2}
 #'   \item{`tip`}{A list of data.frame gives the coordinates of tip where column
 #'   x (or y) corresponds to the scaled discrete variable and column x0 (or y0)
