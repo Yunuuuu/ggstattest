@@ -156,6 +156,7 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         if (is.null(params$tip_length)) params$tip_length <- rel(0.01)
         if (is.null(params$nudge_x)) params$nudge_x <- 0L
         if (is.null(params$nudge_y)) params$nudge_y <- 0L
+        # make sure each panel have a arguments
         panel_number <- max(length(unique(data$PANEL)), data$PANEL)
         for (i in c("height", "step_increase", "tip_length", "nudge_x", "nudge_y")) {
             value <- params[[i]]
@@ -197,9 +198,9 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         # we should increase the segment y value in each panel individually
         data <- split(data, ~PANEL, drop = TRUE)
         data <- lapply(names(data), function(panel) {
-            temp <- data[[panel]]
+            out <- data[[panel]]
             panel_idx <- as.integer(panel)
-            baseline <- max(temp$y, na.rm = TRUE)
+            baseline <- max(out$y, na.rm = TRUE)
             height <- height[[panel_idx]]
             step_increase <- step_increase[[panel_idx]]
             nudge_x <- nudge_x[[panel_idx]]
@@ -208,39 +209,39 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
             if (is_rel(height)) {
                 height <- baseline * unclass(height)
             }
-            temp$y <- temp$y + height
+            out$y <- out$y + height
 
             # if step_increase is smaller than the difference of y value between
             # current label and lower label. If so, we shouldn't increase the
             # current label y value.
-            label_number <- length(temp$y)
+            label_number <- length(out$y)
             if (label_number >= 2L) {
                 if (is_rel(step_increase)) {
                     step_increase <- baseline * unclass(step_increase)
                 }
                 for (i in 2:label_number) {
-                    temp$y[i] <- max(
-                        temp$y[i - 1L] + step_increase, temp$y[i],
+                    out$y[i] <- max(
+                        out$y[i - 1L] + step_increase, out$y[i],
                         na.rm = TRUE
                     )
                 }
             }
             # yend coordinate is for segments
-            temp$yend <- temp$y
+            out$yend <- out$y
 
             # nudge_x and nudge_y will nudge the coordinates of label but not
             # the coordinates of segments
-            temp <- ggplot2::flip_data(temp, params$flipped_aes)
+            out <- ggplot2::flip_data(out, params$flipped_aes)
             # nudge label coordinates
             if (is_rel(nudge_x)) {
                 nudge_x <- baseline * unclass(nudge_x)
             }
-            temp$x <- temp$x + nudge_x
+            out$x <- out$x + nudge_x
             if (is_rel(nudge_y)) {
                 nudge_y <- baseline * unclass(nudge_y)
             }
-            temp$y <- temp$y + nudge_y
-            temp
+            out$y <- out$y + nudge_y
+            out
         })
         data <- do.call("rbind", data)
         data
