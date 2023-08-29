@@ -31,11 +31,10 @@
 #'   If a **string**, the function is looked up in `globalenv()`.
 #'
 #' Notes: if **method** is "none", this must be a list (whose length should be
-#' equal to the number of **PANEL**) of character labels or an atomic vector
-#' which can be coerced to character (in this way, this will be used in every
-#' PANEL) corresponding to the result in each comparisons of compare_list, which
-#' will be matched by names if elements in both **label_fn** and
-#' **compare_list** have names otherwise by position.
+#' equal to the number of **PANEL**) of labels or an atomic vector directly (in
+#' this way, this will be used in every PANEL) corresponding to the result in
+#' each comparisons of compare_list, which will be matched by names if elements
+#' in both **label_fn** and **compare_list** have names otherwise by position.
 #' @param hide_ns A scalar logical value or a function (can be purrr-style)
 #'   which take statistical result as an argument and return a logical value
 #'   indicating whether hide this result. If TRUE, this will flag the
