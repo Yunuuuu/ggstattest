@@ -111,21 +111,27 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
             cli::cli_abort("{.fn {snake_class(self)}} requires an {.field x}, {.field y} aesthetic.") # nolint
         }
 
+        # if we don't implement statistical test,
+        if (identical(params$method, "none")) {
+            if (is.list(params$label_fn)) {
+                if (length(params$label_fn) != length(unique(data$PANEL))) {
+                    cli::cli_abort(
+                        "{.arg label_fn} should be a list with same length of the number of {.field PANEL} ({length(unique(data$PANEL))})" # nolint
+                    )
+                }
+            } else if (!is.null(params$label_fn)) {
+                params$label_fn <- as.character(params$label_fn)
+            } else {
+                cli::cli_abort("{.arg label_fn} must be provided when {.arg method} is {.val none}")
+            }
+        }
+
         if (is.null(params$label_fn)) {
             params$label_fn <- function(x) {
                 stats::symnum(
                     x$p.value,
                     cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 1),
                     symbols = c("****", "***", "**", "*", "ns")
-                )
-            }
-        }
-
-        # if we don't implement statistical test,
-        if (identical(params$method, "none") && is.list(params$label_fn)) {
-            if (length(params$label_fn) != length(unique(data$PANEL))) {
-                cli::cli_abort(
-                    "{.arg label_fn} should be a list with same length of {.field PANEL} ({length(unique(data$PANEL))})" # nolint
                 )
             }
         }
@@ -237,18 +243,14 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
         # define label
         if (identical(method, "none")) {
             if (is.list(label_fn)) label_fn <- label_fn[[data$PANEL[[1L]]]]
-            if (is.character(label_fn) || is.list(label_fn)) {
-                label <- vapply(seq_along(compare_list), function(i) {
-                    if (all(rlang::have_name(label_fn)) && all(rlang::have_name(compare_list))) {
-                        label <- label_fn[[names(compare_list)[[i]]]]
-                    } else {
-                        label <- label_fn[[i]]
-                    }
-                    label
-                }, character(1L), USE.NAMES = FALSE)
-            } else {
-                label <- rlang::rep_along(compare_list, "")
-            }
+            label <- vapply(seq_along(compare_list), function(i) {
+                if (all(rlang::have_name(label_fn)) && all(rlang::have_name(compare_list))) {
+                    label <- label_fn[[names(compare_list)[[i]]]]
+                } else {
+                    label <- label_fn[[i]]
+                }
+                label
+            }, character(1L), USE.NAMES = FALSE)
         } else {
             if (identical(method, "nonparametric")) {
                 if (unique_numbers > 2L) {
