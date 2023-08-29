@@ -167,12 +167,12 @@ it.
 
 If a \strong{string}, the function is looked up in \code{globalenv()}.
 
-Notes: if \strong{method} is "none", this can be a list (whose length should be
-equal to the number of \strong{PANEL}) of character labels or an atomic character
-directly (in this way, this will be used in every PANEL) corresponding to the
-result in each comparisons of compare_list, which will be matched by names if
-elements in both \strong{label_fn} and \strong{compare_list} have names otherwise by
-position.}
+Notes: if \strong{method} is "none", this must be a list (whose length should be
+equal to the number of \strong{PANEL}) of character labels or an atomic vector
+which can be coerced to character (in this way, this will be used in every
+PANEL) corresponding to the result in each comparisons of compare_list, which
+will be matched by names if elements in both \strong{label_fn} and
+\strong{compare_list} have names otherwise by position.}
 
 \item{hide_ns}{A scalar logical value or a function (can be purrr-style)
 which take statistical result as an argument and return a logical value
