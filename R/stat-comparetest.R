@@ -119,9 +119,7 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
                         "{.arg label_fn} should be a list with same length of the number of {.field PANEL} ({length(unique(data$PANEL))})" # nolint
                     )
                 }
-            } else if (!is.null(params$label_fn)) {
-                params$label_fn <- as.character(params$label_fn)
-            } else {
+            } else if (is.null(params$label_fn)) {
                 cli::cli_abort("{.arg label_fn} must be provided when {.arg method} is {.val none}")
             }
         }
@@ -249,7 +247,7 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
                 } else {
                     label <- label_fn[[i]]
                 }
-                label
+                as.character(label)
             }, character(1L), USE.NAMES = FALSE)
         } else {
             if (identical(method, "nonparametric")) {
