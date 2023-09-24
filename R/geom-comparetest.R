@@ -157,7 +157,7 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
         if (is.null(params$nudge_x)) params$nudge_x <- 0L
         if (is.null(params$nudge_y)) params$nudge_y <- 0L
         # make sure each panel have a arguments
-        panel_number <- max(length(unique(data$PANEL)), data$PANEL)
+        panel_number <- max(unique_n(data$PANEL), data$PANEL)
         for (i in c("height", "step_increase", "tip_length", "nudge_x", "nudge_y")) {
             value <- params[[i]]
             if (length(value) == 1L) value <- list(params[[i]])

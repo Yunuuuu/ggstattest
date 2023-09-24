@@ -4,7 +4,7 @@ ggplot2::rel
 
 is_rel <- function(x) inherits(x, "rel")
 
-"%||%" <- function(a, b) {
+`%||%` <- function(a, b) {
     if (!is.null(a)) a else b
 }
 
@@ -79,3 +79,19 @@ all_aesthetics <- c(
     "size", "srt", "upper", "vjust", "weight", "width", "x", "xend", "xmax",
     "xmin", "xintercept", "y", "yend", "ymax", "ymin", "yintercept", "z"
 )
+
+# Look up the scale that should be used for a given aesthetic
+aes_to_scale <- function(var) {
+    var[var %in% x_aes] <- "x"
+    var[var %in% y_aes] <- "y"
+    var
+}
+
+# Figure out if an aesthetic is a position aesthetic or not
+is_position_aes <- function(vars) {
+    aes_to_scale(vars) %in% c("x", "y")
+}
+
+unique_n <- function(x) {
+    length(unique(x))
+}

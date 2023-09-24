@@ -113,9 +113,9 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
         # if we don't implement statistical test,
         if (identical(params$method, "none")) {
             if (is.list(params$label_fn)) {
-                if (length(params$label_fn) != length(unique(data$PANEL))) {
+                if (length(params$label_fn) != unique_n(data$PANEL)) {
                     cli::cli_abort(
-                        "{.arg label_fn} should be a list with same length of the number of {.field PANEL} ({length(unique(data$PANEL))})" # nolint
+                        "{.arg label_fn} should be a list with same length of the number of {.field PANEL} ({unique_n(data$PANEL)})" # nolint
                     )
                 }
             } else if (is.null(params$label_fn)) {
@@ -171,7 +171,7 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
             return(data.frame())
         }
 
-        # set defaul value for compare_list
+        # set default value for compare_list
         # if NULL, all paired comparison will be performed, use the level of the
         # original variable to specify the comparison.
         if (is.null(compare_list)) {
@@ -183,10 +183,6 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
             compare_list <- lapply(compare_list, function(comparison) {
                 unclass(scales$x$map(comparison))
             })
-        }
-
-        if (is_binary_comparison(method)) {
-            compare_list <- compare_list[lengths(compare_list) == 2L]
         }
 
         # to plot a statistical test results, we need (x, y, label)
@@ -295,12 +291,3 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
         ggplot2::flip_data(stat_data, flipped_aes)
     }
 )
-
-is_binary_comparison <- function(x) {
-    identical(x, "wilcox.test") ||
-        identical(x, "t.test") ||
-        identical(x, stats::wilcox.test) ||
-        identical(x, stats::t.test) ||
-        identical(x, quote(wilcox.test)) ||
-        identical(x, quote(t.test))
-}

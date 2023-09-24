@@ -193,8 +193,6 @@ StatAnnotest <- ggplot2::ggproto("StatAnnotest", ggplot2::Stat,
                              na.rm = FALSE,
                              flipped_aes = FALSE) {
         # set defaul value for method and label_fn
-        rhs_symbols <- get_expr_symbols(rlang::f_rhs(formula))
-        lhs_symbols <- get_expr_symbols(rlang::f_lhs(formula))
         # if (scales$x$is_discrete() && is.numeric(data$y)) {
         #     data$x <- factor(data$x)
         # }
@@ -202,11 +200,13 @@ StatAnnotest <- ggplot2::ggproto("StatAnnotest", ggplot2::Stat,
         #     data$y <- factor(data$y)
         # }
         if (is.null(method)) {
+            rhs_symbols <- get_expr_symbols(rlang::f_rhs(formula))
+            lhs_symbols <- get_expr_symbols(rlang::f_lhs(formula))
             if (length(lhs_symbols) == 1L) {
                 if (!aes_is_discrete(data, scales, lhs_symbols)) {
                     if (length(rhs_symbols) == 1L) {
                         if (aes_is_discrete(data, scales, rhs_symbols)) {
-                            if (length(unique(data[[rhs_symbols]])) > 2L) {
+                            if (unique_n(data[[rhs_symbols]]) > 2L) {
                                 method <- "kruskal.test"
                             } else {
                                 method <- "wilcox.test"
@@ -255,8 +255,9 @@ StatAnnotest <- ggplot2::ggproto("StatAnnotest", ggplot2::Stat,
 )
 
 aes_is_discrete <- function(data, scales, aes_name) {
-    if (any(aes_name == c("x", "y"))) {
-        scales[[aes_name]]$is_discrete()
+    scale <- aes_to_scale(aes_name)
+    if (any(scale == c("x", "y"))) {
+        scales[[scale]]$is_discrete()
     } else {
         is.character(data[[aes_name]]) || is.factor(data[[aes_name]])
     }
@@ -297,12 +298,12 @@ expr_type <- function(x) {
 annotest_label_fn <- function(method) {
     switch(method,
         cor = function(x) {
-            paste("Cor", sprintf("%.2g", x), sep = ": ")
+            sprintf("Cor: %.2g", x)
         },
         cor.test = function(x) {
             paste(
                 c(names(x$estimate), "Pvalue"),
-                sprintf("%.2g", c(x$estimate, x$p.value)),
+                c(sprintf("%.2g", x$estimate), format_pval(x$p.value)),
                 sep = ": ",
                 collapse = "\n"
             )
@@ -313,13 +314,19 @@ annotest_label_fn <- function(method) {
         wilcox.test = function(x) {
             paste(
                 c(names(x$statistic), "Pvalue"),
-                sprintf("%.2g", c(x$statistic, x$p.value)),
+                c(sprintf("%.2g", x$statistic), format_pval(x$p.value)),
                 sep = ": ",
                 collapse = "\n"
             )
         },
         function(x) {
-            paste("Pvalue", sprintf("%.2g", x$p.value), sep = ": ")
+            sprintf("Pvalue: %.2g", format_pval(x$p.value))
         }
+    )
+}
+
+format_pval <- function(x) {
+    ifelse(x < 0.01, sprintf("%.2e", x),
+        ifelse(x < 0.05, sprintf("%.3f", x), sprintf("%.2f", x))
     )
 }
