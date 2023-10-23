@@ -99,8 +99,36 @@ ggforest <- function(
         x = .data$estimate,
         y = .data$y - 1L + .env$nudge_y
     ))
+    xlim <- xlim %||%
+        range(c(data[[1L]], data[[2L]], data[[3L]]), na.rm = TRUE)
+    xlim <- sort(xlim)
     if (isTRUE(add_band)) {
-        p <- p + ggadd_band(band_col)
+        if (startsWith(x_scale_trans, "log")) {
+            band_min <- 0L
+        } else {
+            band_min <- -Inf
+        }
+        p <- p +
+            # lowest band
+            ggplot2::geom_rect(ggplot2::aes(
+                xmin = .env$band_min, xmax = Inf,
+                ymin = -Inf, ymax = 0L,
+                fill = "0"
+            )) +
+            # plot band
+            ggplot2::geom_rect(ggplot2::aes(
+                xmin = .env$band_min, xmax = Inf,
+                ymin = .data$y - 1L, ymax = .data$y,
+                fill = factor(.data$y %% 2L)
+            )) +
+            # highest band
+            ggplot2::geom_rect(ggplot2::aes(
+                xmin = .env$band_min, xmax = Inf,
+                ymin = max(.data$y),
+                ymax = Inf,
+                fill = "1"
+            )) +
+            ggplot2::scale_fill_manual(values = band_col, guide = "none")
     }
     p <- p +
         ggplot2::geom_point(
@@ -120,9 +148,6 @@ ggforest <- function(
             linetype = null_linetype,
             !!!null_line_params
         ))
-    xlim <- xlim %||%
-        range(c(data[[1L]], data[[2L]], data[[3L]]), na.rm = TRUE)
-    xlim <- sort(xlim)
     if (isTRUE(add_arrow)) {
         # plot arrow
         # this df has the text labels
@@ -205,8 +230,7 @@ ggforest <- function(
     p <- p +
         ggplot2::scale_x_continuous(
             name = xlab, limits = xlim, breaks = xbreaks, labels = xlabels,
-            trans = x_scale_trans, expand = x_scale_expand,
-            oob = scales::squish_infinite
+            trans = x_scale_trans, expand = x_scale_expand
         ) +
         ggplot2::scale_y_continuous(
             name = NULL, limits = c(0L, max(data$y)),

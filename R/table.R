@@ -80,7 +80,27 @@ ggtable <- function(
         )
     )
     if (isTRUE(add_band)) {
-        p <- p + ggadd_band(band_col)
+        p <- p +
+            # lowest band
+            ggplot2::geom_rect(ggplot2::aes(
+                xmin = -Inf, xmax = Inf,
+                ymin = -Inf, ymax = 0L,
+                fill = "0"
+            )) +
+            # plot band
+            ggplot2::geom_rect(ggplot2::aes(
+                xmin = -Inf, xmax = Inf,
+                ymin = .data$y - 1L, ymax = .data$y,
+                fill = factor(.data$y %% 2L)
+            )) +
+            # highest band
+            ggplot2::geom_rect(ggplot2::aes(
+                xmin = -Inf, xmax = Inf,
+                ymin = max(.data$y),
+                ymax = Inf,
+                fill = "1"
+            )) +
+            ggplot2::scale_fill_manual(values = band_col, guide = "none")
     }
     p +
         ggplot2::geom_text() +
@@ -110,31 +130,6 @@ ggtable <- function(
             axis.text.y = y_labels_element %||% ggplot2::element_text(),
             panel.grid.major = ggplot2::element_blank()
         )
-}
-
-ggadd_band <- function(band_col = c("white", "#eff3f2")) {
-    list(
-        # lowest band
-        ggplot2::geom_rect(ggplot2::aes(
-            xmin = -Inf, xmax = Inf,
-            ymin = -Inf, ymax = 0L,
-            fill = "0"
-        )),
-        # plot band
-        ggplot2::geom_rect(ggplot2::aes(
-            xmin = -Inf, xmax = Inf,
-            ymin = .data$y - 1L, ymax = .data$y,
-            fill = factor(.data$y %% 2L)
-        )),
-        # highest band
-        ggplot2::geom_rect(ggplot2::aes(
-            xmin = -Inf, xmax = Inf,
-            ymin = max(.data$y),
-            ymax = Inf,
-            fill = "1"
-        )),
-        ggplot2::scale_fill_manual(values = band_col, guide = "none")
-    )
 }
 
 utils::globalVariables("everything")
