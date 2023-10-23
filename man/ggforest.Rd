@@ -31,6 +31,7 @@ ggforest(
   right_table_params = list(),
   add_arrow = TRUE,
   arrow_labels = c("Lower", "Higher"),
+  arrow_weights = 35L,
   grid_arrow = grid::arrow(angle = 15, type = "closed", length = grid::unit(0.1, "in")),
   add_band = TRUE,
   band_col = c("white", "#eff3f2"),
@@ -90,6 +91,9 @@ placed some distance away from the axes. Will also control the
 
 \item{arrow_labels}{String Vector, length 2. Labels for the arrows. Set
 arrows to TRUE or this will have no effect.}
+
+\item{arrow_weights}{A numeric of length 2, reduce this if you want to
+shorten the arrow, and increase this if you want to lengthen the arrow.}
 
 \item{grid_arrow}{An \link[grid:arrow]{arrow} object created.}
 

@@ -38,6 +38,8 @@
 #' @param add_arrow A bool, if `TRUE`, will add arrow below x-axis.
 #' @param arrow_labels String Vector, length 2. Labels for the arrows. Set
 #' arrows to TRUE or this will have no effect.
+#' @param arrow_weights A numeric of length 2, reduce this if you want to
+#' shorten the arrow, and increase this if you want to lengthen the arrow.
 #' @param grid_arrow An [arrow][grid::arrow] object created.
 #' @param widths,heights The relative widths and heights of each column and row
 #' in the grid. See [wrap_plots][patchwork::wrap_plots].
@@ -55,7 +57,9 @@ ggforest <- function(
     xlabels = scales::number_format(accuracy = 0.1),
     x_scale_trans = "log10", x_scale_expand = c(0, 0), y_scale_expand = c(0, 0),
     left_table_params = list(), right_table_params = list(),
-    add_arrow = TRUE, arrow_labels = c("Lower", "Higher"),
+    add_arrow = TRUE,
+    arrow_labels = c("Lower", "Higher"),
+    arrow_weights = 35L, # increase will have a longer arrow
     grid_arrow = grid::arrow(
         angle = 15, type = "closed",
         length = grid::unit(0.1, "in")
@@ -122,15 +126,18 @@ ggforest <- function(
     if (isTRUE(add_arrow)) {
         # plot arrow
         # this df has the text labels
-        small_amount <- diff(xlim) / 35L
+        small_amount <- diff(xlim) / rep_len(arrow_weights, 2L)
         arrow_text_df <- data.frame(
             text = arrow_labels,
             y = c(0L, 0L),
             hjust = c(0.5, 0.5)
         )
         arrow_df <- data.frame(
-            xstart = c(null_line_at - small_amount, null_line_at + small_amount),
-            xend = c(xlim[1] + small_amount, xlim[2] - small_amount),
+            xstart = c(
+                null_line_at - small_amount[1L],
+                null_line_at + small_amount[2L]
+            ),
+            xend = c(xlim[1] + small_amount[1L], xlim[2] - small_amount[2L]),
             y = c(1L, 1L)
         )
         good_idx <- c(
@@ -198,7 +205,8 @@ ggforest <- function(
     p <- p +
         ggplot2::scale_x_continuous(
             name = xlab, limits = xlim, breaks = xbreaks, labels = xlabels,
-            trans = x_scale_trans, expand = x_scale_expand
+            trans = x_scale_trans, expand = x_scale_expand,
+            oob = scales::squish_infinite
         ) +
         ggplot2::scale_y_continuous(
             name = NULL, limits = c(0L, max(data$y)),
