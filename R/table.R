@@ -123,7 +123,7 @@ ggadd_band <- function(band_col = c("white", "#eff3f2")) {
         # plot band
         ggplot2::geom_rect(ggplot2::aes(
             xmin = -Inf, xmax = Inf,
-            ymin = .data$y - 1, ymax = .data$y,
+            ymin = .data$y - 1L, ymax = .data$y,
             fill = factor(.data$y %% 2L)
         )),
         # highest band
