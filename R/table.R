@@ -3,18 +3,20 @@
 #' Create a table in ggplot2 style
 #'
 #' @param data A matrix or data.frame-like data.
-#' @param x,y Axis value in \[0, 1\] of text in each cell of table.
+#' @param ylabels A string, in `colnames(data)`, specifies the column used as
+#' the axis text.
+#' @param nudge_x,nudge_y Axis value in \[0, 1\] of text in each cell of table.
 #' @param hjust,vjust Horizontal and vertical justification \[0, 1\] of text in
 #' each cell of table.
-#' @param row_scale_expand,col_scale_expand A vector of range expansion
+#' @param x_scale_expand,y_scale_expand A vector of range expansion
 #' constants used to add some padding around the data to ensure that they are
 #' placed some distance away from the axes. See
-#' [scale_continuous][ggplot2::scale_x_continuous]. 
-#' @param row_header,col_header Axis value in \[0, 1\] of table header.
-#' @param row_header_position,col_header_position The position of the header,
-#' left or right for `col_header_position`, top or bottom for
-#' `row_header_position`.
-#' @param row_header_text,column_header_text A
+#' [scale_continuous][ggplot2::scale_x_continuous].
+#' @param x_labels_nudge,y_labels_nudge Axis value in \[0, 1\] of table header.
+#' @param x_labels_position,y_labels_position The position of the header,
+#' left or right for `y_labels_position`, top or bottom for
+#' `x_labels_position`.
+#' @param x_labels_text,y_labels_text A
 #' [element_text][ggplot2::element_text] object specifies the header attributes.
 #' @param clip Should drawing be clipped to the extent of the plot panel? A
 #' setting of "on" means yes, and a setting of "off" (the default) means no.
@@ -23,10 +25,11 @@
 #' @return A [ggplot][ggplot2::ggplot] object.
 #' @export
 ggtable <- function(
-    data, x = 0.5, y = 0.5, hjust = 0.5, vjust = 0.5,
-    row_scale_expand = c(0L, 0L), col_scale_expand = c(0L, 0L),
-    row_header = 0.5, row_header_position = NULL, row_header_text = NULL,
-    col_header = 0.5, col_header_position = NULL, column_header_text = NULL,
+    data, ylabels = NULL,
+    nudge_x = 0.5, nudge_y = 0.5, hjust = 0.5, vjust = 0.5,
+    x_scale_expand = c(0L, 0L), y_scale_expand = c(0L, 0L),
+    x_labels_nudge = 0.5, x_labels_position = NULL, x_labels_text = NULL,
+    y_labels_nudge = 0.5, y_labels_position = NULL, y_labels_text = NULL,
     clip = "off", add_band = TRUE, band_col = c("white", "#eff3f2")) {
     if (is.matrix(data)) {
         data <- as.data.frame(data,
@@ -38,12 +41,20 @@ ggtable <- function(
             "{.arg data} must be a {.cls data.frame} or {.cls matrix}"
         )
     }
-    row_header_position <- match.arg(row_header_position, c("bottom", "top"))
-    col_header_position <- match.arg(col_header_position, c("left", "right"))
+    x_labels_position <- match.arg(x_labels_position, c("bottom", "top"))
+    y_labels_position <- match.arg(y_labels_position, c("left", "right"))
+
+    if (!is.null(ylabels)) {
+        if (!rlang::is_string(ylabels, names(data))) {
+            cli::cli_abort("{.arg ylabels} must be a string in {.code colnames(data)}")
+        }
+        id <- ylabels
+        ylabels <- data[[id]]
+        data[[id]] <- NULL
+    }
     colnms <- rlang::names2(data)
     names(data) <- colnms
-    rownms <- rownames(data)
-    rowids <- rownms %||% seq_len(nrow(data))
+    rowids <- ylabels %||% seq_len(nrow(data))
     data <- dplyr::mutate(
         data, dplyr::across(everything(), .fns = as.character)
     )
@@ -59,8 +70,8 @@ ggtable <- function(
     p <- ggplot2::ggplot(
         data = data,
         ggplot2::aes(
-            x = .data$x - 1L + .env$x,
-            y = .data$y - 1L + .env$y,
+            x = .data$x - 1L + .env$nudge_x,
+            y = .data$y - 1L + .env$nudge_y,
             hjust = .data$hjust,
             vjust = .data$vjust,
             label = .data$value
@@ -75,26 +86,26 @@ ggtable <- function(
             name = NULL,
             limits = c(0L, max(data$x)),
             # breaks should be header coord value
-            breaks = seq_len(max(data$x)) - 1L + row_header,
+            breaks = seq_len(max(data$x)) - 1L + x_labels_nudge,
             # minor_breaks are the table separator line
             minor_breaks = c(0L, seq_len(max(data$x))),
-            labels = colnms, expand = row_scale_expand,
-            position = row_header_position
+            labels = colnms, expand = x_scale_expand,
+            position = x_labels_position
         ) +
         ggplot2::scale_y_continuous(
             name = NULL,
             limits = c(0L, max(data$y)),
-            breaks = seq_len(max(data$y)) - 1L + col_header,
+            breaks = seq_len(max(data$y)) - 1L + y_labels_nudge,
             minor_breaks = c(0L, seq_len(max(data$y))),
-            labels = rownms,
-            expand = col_scale_expand,
-            position = col_header_position
+            labels = ylabels,
+            expand = y_scale_expand,
+            position = y_labels_position
         ) +
         ggplot2::coord_cartesian(clip = clip) +
         ggplot2::theme(
             axis.ticks = ggplot2::element_blank(),
-            axis.text.x = row_header_text %||% ggplot2::element_text(),
-            axis.text.y = column_header_text %||% ggplot2::element_text(),
+            axis.text.x = x_labels_text %||% ggplot2::element_text(),
+            axis.text.y = y_labels_text %||% ggplot2::element_text(),
             panel.grid.major = ggplot2::element_blank()
         )
 }
