@@ -35,7 +35,9 @@ ggforest(
 )
 }
 \arguments{
-\item{data}{A data.frame-like object.}
+\item{data}{A matrix or data.frame-like data. Excluding the \code{ylabels} column,
+the first three column will be regarded as the forest point estimate and
+confidence interval (lower and higher).}
 
 \item{left_table, right_table}{Add a table in the left or right, details see
 \link{ggtable}.}

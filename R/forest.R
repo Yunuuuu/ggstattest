@@ -1,6 +1,8 @@
 #'  Forest plot in ggplot2
 #'
-#' @param data A data.frame-like object.
+#' @param data A matrix or data.frame-like data. Excluding the `ylabels` column,
+#' the first three column will be regarded as the forest point estimate and
+#' confidence interval (lower and higher).
 #' @param left_table,right_table Add a table in the left or right, details see
 #' [ggtable].
 #' @param ylabels A string, in `colnames(data)`, specifies the column used as
