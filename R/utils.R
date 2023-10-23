@@ -2,6 +2,10 @@
 #' @export
 ggplot2::rel
 
+#' @importFrom ggplot2 waiver
+#' @export
+ggplot2::waiver
+
 is_rel <- function(x) inherits(x, "rel")
 
 `%||%` <- function(a, b) {
