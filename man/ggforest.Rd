@@ -29,9 +29,14 @@ ggforest(
   y_scale_expand = c(0, 0),
   left_table_params = list(),
   right_table_params = list(),
+  add_arrow = TRUE,
+  arrow_labels = c("Lower", "Higher"),
+  grid_arrow = grid::arrow(angle = 15, type = "closed", length = grid::unit(0.1, "in")),
   add_band = TRUE,
   band_col = c("white", "#eff3f2"),
-  widths = NULL
+  forest_width = 5L,
+  widths = NULL,
+  heights = c(30L, 1L)
 )
 }
 \arguments{
@@ -69,7 +74,9 @@ forest plot to indiate null hypothesis.}
 
 \item{xlabs, xlim, xbreaks, xlabels, x_scale_trans, x_scale_expand}{Arguments
 passed as \code{name}, \code{limits}, \code{breaks}, \code{labels}, \code{trans}, \code{expand} in
-\link[ggplot2:scale_continuous]{scale_x_continuous}.}
+\link[ggplot2:scale_continuous]{scale_x_continuous}. Just a note: use xlabs =
+\code{expression(Protective \%<->\% Hazardous)} to add directed arrow in x labs. But
+in this function, we just assembly an arrow vertically.}
 
 \item{y_scale_expand}{A vector of range expansion
 constants used to add some padding around the data to ensure that they are
@@ -79,12 +86,23 @@ placed some distance away from the axes. Will also control the
 \item{left_table_params, right_table_params}{Other arguments passed to
 \link{ggtable}.}
 
+\item{add_arrow}{A bool, if \code{TRUE}, will add arrow below x-axis.}
+
+\item{arrow_labels}{String Vector, length 2. Labels for the arrows. Set
+arrows to TRUE or this will have no effect.}
+
+\item{grid_arrow}{An \link[grid:arrow]{arrow} object created.}
+
 \item{add_band}{A bool, if \code{TRUE}, will add band interval in the background.}
 
 \item{band_col}{Color of background band interval.}
 
-\item{widths}{The relative widths for all plots. See
-\link[patchwork:wrap_plots]{wrap_plots}.}
+\item{forest_width}{The relative width of the forest plot, only used when
+\code{widths} is \code{NULL}. The relative width of talbe will be calculated as the
+column number.}
+
+\item{widths, heights}{The relative widths and heights of each column and row
+in the grid. See \link[patchwork:wrap_plots]{wrap_plots}.}
 }
 \value{
 A \link[ggplot2:ggplot]{ggplot} object or

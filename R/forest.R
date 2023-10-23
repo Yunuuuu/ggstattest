@@ -23,31 +23,46 @@
 #' [geom_errorbar][ggplot2::geom_errorbar].
 #' @param xlabs,xlim,xbreaks,xlabels,x_scale_trans,x_scale_expand Arguments
 #' passed as `name`, `limits`, `breaks`, `labels`, `trans`, `expand` in
-#' [scale_x_continuous][ggplot2::scale_x_continuous]. 
+#' [scale_x_continuous][ggplot2::scale_x_continuous]. Just a note: use xlabs =
+#' `expression(Protective %<->% Hazardous)` to add directed arrow in x labs. But
+#' in this function, we just assembly an arrow vertically.
 #' @param y_scale_expand A vector of range expansion
 #' constants used to add some padding around the data to ensure that they are
 #' placed some distance away from the axes. Will also control the
 #' `y_scale_expand` of [ggtable].
 #' @param left_table_params,right_table_params Other arguments passed to
-#' [ggtable]. 
-#' @param widths The relative widths for all plots. See
-#' [wrap_plots][patchwork::wrap_plots]. 
+#' [ggtable].
+#' @param forest_width The relative width of the forest plot, only used when
+#' `widths` is `NULL`. The relative width of talbe will be calculated as the
+#' column number.
+#' @param add_arrow A bool, if `TRUE`, will add arrow below x-axis.
+#' @param arrow_labels String Vector, length 2. Labels for the arrows. Set
+#' arrows to TRUE or this will have no effect.
+#' @param grid_arrow An [arrow][grid::arrow] object created.
+#' @param widths,heights The relative widths and heights of each column and row
+#' in the grid. See [wrap_plots][patchwork::wrap_plots].
 #' @inheritParams ggtable
 #' @return A [ggplot][ggplot2::ggplot] object or
-#' [patchwork][patchwork::wrap_plots]. 
-#' @export 
+#' [patchwork][patchwork::wrap_plots].
+#' @export
 ggforest <- function(
     data, left_table = NULL, right_table = NULL, ylabels = NULL,
     nudge_y = 0.5, y_labels_nudge = 0.5, y_labels_position = "left",
     point_shape = 16L, point_size = 4L, point_color = "darkred",
     null_line_at = 0L, null_linetype = "dashed", null_line_params = list(),
     errorbar_width = 0.15, errorbar_params = list(),
-    xlabs = waiver(), xlim = NULL, xbreaks = waiver(),
+    xlabs = waiver(),
+    xlim = NULL, xbreaks = waiver(),
     xlabels = scales::number_format(accuracy = 0.1),
     x_scale_trans = "log10", x_scale_expand = c(0, 0), y_scale_expand = c(0, 0),
     left_table_params = list(), right_table_params = list(),
+    add_arrow = TRUE, arrow_labels = c("Lower", "Higher"),
+    grid_arrow = grid::arrow(
+        angle = 15, type = "closed",
+        length = grid::unit(0.1, "in")
+    ),
     add_band = TRUE, band_col = c("white", "#eff3f2"),
-    widths = NULL) {
+    forest_width = 5L, widths = NULL, heights = c(30L, 1L)) {
     if (!(inherits(data, "data.frame") && ncol(data) >= 3L)) {
         cli::cli_abort("{.arg data} must be a {.cls data.frame} with at least 3 columns")
     }
@@ -59,6 +74,14 @@ ggforest <- function(
         id <- ylabels
         ylabels <- data[[id]]
         data[[id]] <- NULL
+    }
+    assert_bool(add_arrow)
+    assert_bool(add_band)
+    if (add_arrow && !rlang::is_character(arrow_labels, n = 2L)) {
+        cli::cli_abort("{.arg arrow_labels} must be a character of length 2")
+    }
+    if (add_band && !rlang::is_character(band_col, n = 2L)) {
+        cli::cli_abort("{.arg band_col} must be a color character of length 2")
     }
     data <- data.frame(
         estimate = data[[1L]], ci_low = data[[2L]], ci_high = data[[3L]]
@@ -93,21 +116,102 @@ ggforest <- function(
             xintercept = null_line_at,
             linetype = null_linetype,
             !!!null_line_params
-        )) +
+        ))
+    xlim <- xlim %||%
+        range(c(data[[1L]], data[[2L]], data[[3L]]), na.rm = TRUE)
+    xlim <- sort(xlim)
+    if (isTRUE(add_arrow)) {
+        # plot arrow
+        # this df has the text labels
+        small_amount <- diff(xlim) / 35L
+        arrow_text_df <- data.frame(
+            text = arrow_labels,
+            y = c(0L, 0L),
+            hjust = c(0.5, 0.5)
+        )
+        arrow_df <- data.frame(
+            xstart = c(null_line_at - small_amount, null_line_at + small_amount),
+            xend = c(xlim[1] + small_amount, xlim[2] - small_amount),
+            y = c(1L, 1L)
+        )
+        good_idx <- c(
+            arrow_df$xstart[1L] > arrow_df$xend[1L],
+            arrow_df$xstart[2L] < arrow_df$xend[2L]
+        )
+        arrow_text_df$x <- (arrow_df$xstart + arrow_df$xend) / 2L
+        arrow_df <- arrow_df[good_idx, , drop = FALSE]
+        arrow_text_df <- arrow_text_df[good_idx, , drop = FALSE]
+        # if (null_line_at - small_amount <= xlim[1L]) {
+        #     p <- p +
+        #         ggplot2::annotate("segment",
+        #             x = null_line_at - small_amount,
+        #             xend = -Inf, y = 0L, yend = 0L,
+        #             arrow = grid::arrow()
+        #         )
+        # }
+        # if (null_line_at + small_amount >= xlim[2L]) {
+        #     p <- p +
+        #         ggplot2::annotate("segment",
+        #             x = null_line_at + small_amount,
+        #             xend = Inf, y = 0L, yend = 0L,
+        #             arrow = grid::arrow()
+        #         )
+        # }
+        if (nrow(arrow_text_df)) {
+            # create the arrow/label ggplot object
+            arrows_plot <- ggplot2::ggplot() +
+                ggplot2::geom_segment(
+                    data = arrow_df,
+                    aes(
+                        x = .data$xstart, xend = .data$xend,
+                        y = .data$y, yend = .data$y
+                    ),
+                    arrow = grid_arrow
+                ) +
+                ggplot2::geom_text(
+                    data = arrow_text_df,
+                    aes(
+                        x = .data$x, y = .data$y,
+                        label = .data$text, hjust = .data$hjust
+                    )
+                ) +
+                ggplot2::scale_y_continuous(
+                    name = NULL, expand = c(0, 0),
+                    limits = c(-0.5, 1.75), breaks = NULL, labels = NULL
+                ) +
+                ggplot2::scale_x_continuous(
+                    name = NULL, limits = xlim,
+                    breaks = NULL, labels = NULL,
+                    trans = x_scale_trans, expand = x_scale_expand
+                ) +
+                ggplot2::theme(
+                    panel.background = ggplot2::element_blank(),
+                    plot.background = ggplot2::element_blank(),
+                    panel.border = ggplot2::element_blank(),
+                    plot.margin = ggplot2::margin()
+                )
+        } else {
+            arrows_plot <- NULL
+        }
+    } else {
+        arrows_plot <- NULL
+    }
+    p <- p +
         ggplot2::scale_x_continuous(
             name = xlabs, limits = xlim, breaks = xbreaks, labels = xlabels,
             trans = x_scale_trans, expand = x_scale_expand
         ) +
         ggplot2::scale_y_continuous(
             name = NULL, limits = c(0L, max(data$y)),
-            labels = ylabels,
             expand = y_scale_expand,
             # breaks should be lab coord value
             breaks = ybreaks,
+            labels = ylabels,
             # minor_breaks are the table separator line
             minor_breaks = c(0L, seq_len(max(data$y))),
             position = y_labels_position
         ) +
+        ggplot2::coord_cartesian(clip = "off") +
         ggplot2::theme(
             axis.ticks.y = ggplot2::element_blank(),
             panel.grid.major.y = ggplot2::element_blank()
@@ -127,13 +231,35 @@ ggforest <- function(
             !!!right_table_params
         ))
     }
-    lst <- list(left = ggleft_table, center = p, right = ggright_table)
-    lst <- lst[!vapply(lst, is.null, logical(1L))]
+    lst <- list(
+        left = ggleft_table, center = p,
+        right = ggright_table, arrow = arrows_plot
+    )
+    idx <- !vapply(lst, is.null, logical(1L))
+    lst <- lst[idx]
     if (length(lst) > 1L) {
-        if (is.null(widths)) {
-            widths <- c(ncol(left_table), 30L, ncol(right_table))
+        if (idx[1L]) {
+            design <- list(
+                patchwork::area(1, 1, 1, 1),
+                patchwork::area(1, 2, 1, 2),
+                patchwork::area(1, 3, 1, 3),
+                patchwork::area(2, 2, 2, 2)
+            )
+        } else {
+            design <- list(
+                NULL,
+                patchwork::area(1, 1, 1, 1),
+                patchwork::area(1, 2, 1, 2),
+                patchwork::area(2, 1, 2, 1)
+            )
         }
-        patchwork::wrap_plots(lst, nrow = 1L, widths = widths) &
+        design <- do.call(c, design[idx])
+        if (is.null(widths)) {
+            widths <- c(ncol(left_table), forest_width, ncol(right_table))
+        }
+        patchwork::wrap_plots(lst,
+            widths = widths, heights = heights, design = design
+        ) &
             ggplot2::theme(
                 plot.background = ggplot2::element_blank(),
                 panel.background = ggplot2::element_blank(),
