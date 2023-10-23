@@ -21,9 +21,9 @@
 #' [geom_errorbar][ggplot2::geom_errorbar].
 #' @param errorbar_params Other arguments passed to
 #' [geom_errorbar][ggplot2::geom_errorbar].
-#' @param xlabs,xlim,xbreaks,xlabels,x_scale_trans,x_scale_expand Arguments
+#' @param xlab,xlim,xbreaks,xlabels,x_scale_trans,x_scale_expand Arguments
 #' passed as `name`, `limits`, `breaks`, `labels`, `trans`, `expand` in
-#' [scale_x_continuous][ggplot2::scale_x_continuous]. Just a note: use xlabs =
+#' [scale_x_continuous][ggplot2::scale_x_continuous]. Just a note: use xlab =
 #' `expression(Protective %<->% Hazardous)` to add directed arrow in x labs. But
 #' in this function, we just assembly an arrow vertically.
 #' @param y_scale_expand A vector of range expansion
@@ -51,8 +51,7 @@ ggforest <- function(
     point_shape = 16L, point_size = 4L, point_color = "darkred",
     null_line_at = 0L, null_linetype = "dashed", null_line_params = list(),
     errorbar_width = 0.15, errorbar_params = list(),
-    xlabs = waiver(),
-    xlim = NULL, xbreaks = waiver(),
+    xlab = NULL, xlim = NULL, xbreaks = waiver(),
     xlabels = scales::number_format(accuracy = 0.1),
     x_scale_trans = "log10", x_scale_expand = c(0, 0), y_scale_expand = c(0, 0),
     left_table_params = list(), right_table_params = list(),
@@ -198,7 +197,7 @@ ggforest <- function(
     }
     p <- p +
         ggplot2::scale_x_continuous(
-            name = xlabs, limits = xlim, breaks = xbreaks, labels = xlabels,
+            name = xlab, limits = xlim, breaks = xbreaks, labels = xlabels,
             trans = x_scale_trans, expand = x_scale_expand
         ) +
         ggplot2::scale_y_continuous(

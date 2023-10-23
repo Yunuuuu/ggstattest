@@ -20,7 +20,7 @@ ggforest(
   null_line_params = list(),
   errorbar_width = 0.15,
   errorbar_params = list(),
-  xlabs = waiver(),
+  xlab = NULL,
   xlim = NULL,
   xbreaks = waiver(),
   xlabels = scales::number_format(accuracy = 0.1),
@@ -72,9 +72,9 @@ forest plot to indiate null hypothesis.}
 \item{errorbar_params}{Other arguments passed to
 \link[ggplot2:geom_linerange]{geom_errorbar}.}
 
-\item{xlabs, xlim, xbreaks, xlabels, x_scale_trans, x_scale_expand}{Arguments
+\item{xlab, xlim, xbreaks, xlabels, x_scale_trans, x_scale_expand}{Arguments
 passed as \code{name}, \code{limits}, \code{breaks}, \code{labels}, \code{trans}, \code{expand} in
-\link[ggplot2:scale_continuous]{scale_x_continuous}. Just a note: use xlabs =
+\link[ggplot2:scale_continuous]{scale_x_continuous}. Just a note: use xlab =
 \code{expression(Protective \%<->\% Hazardous)} to add directed arrow in x labs. But
 in this function, we just assembly an arrow vertically.}
 
