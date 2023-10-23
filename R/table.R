@@ -16,7 +16,7 @@
 #' @param x_labels_position,y_labels_position The position of the header,
 #' left or right for `y_labels_position`, top or bottom for
 #' `x_labels_position`.
-#' @param x_labels_text,y_labels_text A
+#' @param x_labels_element,y_labels_element A
 #' [element_text][ggplot2::element_text] object specifies the header attributes.
 #' @param clip Should drawing be clipped to the extent of the plot panel? A
 #' setting of "on" means yes, and a setting of "off" (the default) means no.
@@ -28,8 +28,8 @@ ggtable <- function(
     data, ylabels = NULL,
     nudge_x = 0.5, nudge_y = 0.5, hjust = 0.5, vjust = 0.5,
     x_scale_expand = c(0L, 0L), y_scale_expand = c(0L, 0L),
-    x_labels_nudge = 0.5, x_labels_position = NULL, x_labels_text = NULL,
-    y_labels_nudge = 0.5, y_labels_position = NULL, y_labels_text = NULL,
+    x_labels_nudge = 0.5, x_labels_position = NULL, x_labels_element = NULL,
+    y_labels_nudge = 0.5, y_labels_position = NULL, y_labels_element = NULL,
     clip = "off", add_band = TRUE, band_col = c("white", "#eff3f2")) {
     if (is.matrix(data)) {
         data <- as.data.frame(data,
@@ -104,8 +104,8 @@ ggtable <- function(
         ggplot2::coord_cartesian(clip = clip) +
         ggplot2::theme(
             axis.ticks = ggplot2::element_blank(),
-            axis.text.x = x_labels_text %||% ggplot2::element_text(),
-            axis.text.y = y_labels_text %||% ggplot2::element_text(),
+            axis.text.x = x_labels_element %||% ggplot2::element_text(),
+            axis.text.y = y_labels_element %||% ggplot2::element_text(),
             panel.grid.major = ggplot2::element_blank()
         )
 }

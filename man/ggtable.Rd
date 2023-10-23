@@ -15,10 +15,10 @@ ggtable(
   y_scale_expand = c(0L, 0L),
   x_labels_nudge = 0.5,
   x_labels_position = NULL,
-  x_labels_text = NULL,
+  x_labels_element = NULL,
   y_labels_nudge = 0.5,
   y_labels_position = NULL,
-  y_labels_text = NULL,
+  y_labels_element = NULL,
   clip = "off",
   add_band = TRUE,
   band_col = c("white", "#eff3f2")
@@ -46,7 +46,7 @@ placed some distance away from the axes. See
 left or right for \code{y_labels_position}, top or bottom for
 \code{x_labels_position}.}
 
-\item{x_labels_text, y_labels_text}{A
+\item{x_labels_element, y_labels_element}{A
 \link[ggplot2:element]{element_text} object specifies the header attributes.}
 
 \item{clip}{Should drawing be clipped to the extent of the plot panel? A
