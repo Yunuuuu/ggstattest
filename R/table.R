@@ -4,15 +4,17 @@
 #'
 #' @param data A matrix or data.frame-like data.
 #' @param ylabels A string, in `colnames(data)`, specifies the column used as
-#' the axis text.
-#' @param nudge_x,nudge_y Axis value in \[0, 1\] of text in each cell of table.
+#' the y-axis text.
+#' @param nudge_x,nudge_y Horizontal and vertical adjustment \[0, 1\] to nudge
+#' text by in a table cell.
 #' @param hjust,vjust Horizontal and vertical justification \[0, 1\] of text in
 #' each cell of table.
 #' @param x_scale_expand,y_scale_expand A vector of range expansion
 #' constants used to add some padding around the data to ensure that they are
 #' placed some distance away from the axes. See
 #' [scale_continuous][ggplot2::scale_x_continuous].
-#' @param x_labels_nudge,y_labels_nudge Axis value in \[0, 1\] of table header.
+#' @param x_labels_nudge,y_labels_nudge Horizontal and vertical adjustment in
+#' \[0, 1\] of table header.
 #' @param x_labels_position,y_labels_position The position of the header,
 #' left or right for `y_labels_position`, top or bottom for
 #' `x_labels_position`.

@@ -28,9 +28,10 @@ ggtable(
 \item{data}{A matrix or data.frame-like data.}
 
 \item{ylabels}{A string, in \code{colnames(data)}, specifies the column used as
-the axis text.}
+the y-axis text.}
 
-\item{nudge_x, nudge_y}{Axis value in [0, 1] of text in each cell of table.}
+\item{nudge_x, nudge_y}{Horizontal and vertical adjustment [0, 1] to nudge
+text by in a table cell.}
 
 \item{hjust, vjust}{Horizontal and vertical justification [0, 1] of text in
 each cell of table.}
@@ -40,7 +41,8 @@ constants used to add some padding around the data to ensure that they are
 placed some distance away from the axes. See
 \link[ggplot2:scale_continuous]{scale_continuous}.}
 
-\item{x_labels_nudge, y_labels_nudge}{Axis value in [0, 1] of table header.}
+\item{x_labels_nudge, y_labels_nudge}{Horizontal and vertical adjustment in
+[0, 1] of table header.}
 
 \item{x_labels_position, y_labels_position}{The position of the header,
 left or right for \code{y_labels_position}, top or bottom for
