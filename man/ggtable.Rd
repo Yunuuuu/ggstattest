@@ -10,10 +10,15 @@ ggtable(
   y = 0.5,
   hjust = 0.5,
   vjust = 0.5,
+  row_scale_expand = c(0L, 0L),
+  col_scale_expand = c(0L, 0L),
   row_header = 0.5,
+  row_header_position = NULL,
   row_header_text = NULL,
   col_header = 0.5,
+  col_header_position = NULL,
   column_header_text = NULL,
+  clip = "off",
   add_band = TRUE,
   band_col = c("white", "#eff3f2")
 )
@@ -26,10 +31,22 @@ ggtable(
 \item{hjust, vjust}{Horizontal and vertical justification [0, 1] of text in
 each cell of table.}
 
+\item{row_scale_expand, col_scale_expand}{A vector of range expansion
+constants used to add some padding around the data to ensure that they are
+placed some distance away from the axes. See
+\link[ggplot2:scale_continuous]{scale_continuous}.}
+
 \item{row_header, col_header}{Axis value in [0, 1] of table header.}
+
+\item{row_header_position, col_header_position}{The position of the header,
+left or right for \code{col_header_position}, top or bottom for
+\code{row_header_position}.}
 
 \item{row_header_text, column_header_text}{A
 \link[ggplot2:element]{element_text} object specifies the header attributes.}
+
+\item{clip}{Should drawing be clipped to the extent of the plot panel? A
+setting of "on" means yes, and a setting of "off" (the default) means no.}
 
 \item{add_band}{A bool, if \code{TRUE}, will add band interval in the background.}
 
