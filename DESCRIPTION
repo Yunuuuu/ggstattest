@@ -12,8 +12,10 @@ Imports:
     cli,
     ggplot2,
     grid,
+    patchwork,
     rlang,
-    scales
+    scales,
+    tidyr
 Suggests: 
     stats
 Config/testthat/edition: 3
