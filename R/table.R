@@ -3,8 +3,15 @@
 #' Create a table in ggplot2 style
 #'
 #' @param data A matrix or data.frame-like data.
-#' @param ylabels A string, in `colnames(data)`, specifies the column used as
-#' the y-axis text.
+#' @param cols Columns used to create table. If `NULL`, will select all columns
+#' except column specified by `ylabels`.
+#' @param ylabels Extract a single column used as the y-axis text, passed to
+#' `var` argument in [pull][dplyr::pull].
+#' @param mapping List of aesthetic mappings to use for plot, created by [aes].
+#' This will be added into the default [ggplot][ggplot2::ggplot] object to
+#' change the default aesthetic mappings. The column selected in `cols` will be
+#' collected in `.__value__.` with column names in `.__name__.`. This will be
+#' helpful if you want to adjust aesthetic by specific column or row. 
 #' @param nudge_x,nudge_y Horizontal and vertical adjustment \[0, 1\] to nudge
 #' text by in a table cell.
 #' @param hjust,vjust Horizontal and vertical justification \[0, 1\] of text in
@@ -27,7 +34,7 @@
 #' @return A [ggplot][ggplot2::ggplot] object.
 #' @export
 ggtable <- function(
-    data, ylabels = NULL,
+    data, cols = NULL, ylabels = NULL, mapping = aes(),
     nudge_x = 0.5, nudge_y = 0.5, hjust = 0.5, vjust = 0.5,
     x_scale_expand = c(0L, 0L), y_scale_expand = c(0L, 0L),
     x_labels_nudge = 0.5, x_labels_position = NULL, x_labels_element = NULL,
@@ -43,42 +50,53 @@ ggtable <- function(
             "{.arg data} must be a {.cls data.frame} or {.cls matrix}"
         )
     }
+    if (!missing(mapping) && !inherits(mapping, "uneval")) {
+        cli::cli_abort(c(
+            "{.arg mapping} should be created with {.fn aes}.",
+            "x" = "You've supplied a {.cls {class(mapping)[1]}} object"
+        ))
+    }
     x_labels_position <- match.arg(x_labels_position, c("bottom", "top"))
     y_labels_position <- match.arg(y_labels_position, c("left", "right"))
 
-    if (!is.null(ylabels)) {
-        if (!rlang::is_string(ylabels, names(data))) {
-            cli::cli_abort("{.arg ylabels} must be a string in {.code colnames(data)}")
-        }
-        id <- ylabels
-        ylabels <- data[[id]]
-        data[[id]] <- NULL
+    ylabels_sel <- rlang::enquo(ylabels)
+    if (!rlang::quo_is_null(ylabels_sel)) {
+        ylabels <- dplyr::pull(data, var = !!ylabels_sel)
     }
-    colnms <- rlang::names2(data)
-    names(data) <- colnms
-    rowids <- ylabels %||% seq_len(nrow(data))
-    data <- dplyr::mutate(
-        data, dplyr::across(everything(), .fns = as.character)
+    cols <- rlang::enquo(cols)
+    if (rlang::quo_is_null(cols)) {
+        if (rlang::quo_is_null(ylabels_sel)) {
+            cols <- rlang::expr(everything())
+        } else {
+            cols <- rlang::expr(-!!ylabels_sel)
+        }
+    }
+    pos <- tidyselect::eval_select(cols, data, allow_empty = FALSE)
+    # used as the table column names
+    colnms <- names(pos)
+    data <- dplyr::mutate(data, dplyr::across(!!cols, .fns = as.character))
+    # use complex name to avoid exist columns
+    data$.__y__. <- seq_len(nrow(data))
+    data <- tidyr::pivot_longer(
+        data,
+        cols = tidyselect::all_of(colnms),
+        names_to = ".__name__.",
+        values_to = ".__value__."
     )
-    data$..__y__.. <- factor(rowids, levels = rowids)
-    data <- tidyr::pivot_longer(data,
-        cols = !.data$..__y__..,
-        values_ptypes = character()
-    )
-    data$y <- as.integer(data$..__y__..)
-    data$x <- as.integer(factor(data$name, levels = colnms))
-    data$hjust <- hjust
-    data$vjust <- vjust
+    data$.__x__. <- as.integer(factor(data$.__name__., levels = colnms))
+    data$.__hjust__. <- hjust
+    data$.__vjust__. <- vjust
     p <- ggplot2::ggplot(
         data = data,
         ggplot2::aes(
-            x = .data$x - 1L + .env$nudge_x,
-            y = .data$y - 1L + .env$nudge_y,
-            hjust = .data$hjust,
-            vjust = .data$vjust,
-            label = .data$value
+            x = .data$.__x__. - 1L + .env$nudge_x,
+            y = .data$.__y__. - 1L + .env$nudge_y,
+            hjust = .data$.__hjust__.,
+            vjust = .data$.__vjust__.,
+            label = .data$.__value__.
         )
     )
+    p <- p + mapping
     if (isTRUE(add_band)) {
         p <- p +
             # lowest band
@@ -90,13 +108,13 @@ ggtable <- function(
             # plot band
             ggplot2::geom_rect(ggplot2::aes(
                 xmin = -Inf, xmax = Inf,
-                ymin = .data$y - 1L, ymax = .data$y,
-                fill = factor(.data$y %% 2L)
+                ymin = .data$.__y__. - 1L, ymax = .data$.__y__.,
+                fill = factor(.data$.__y__. %% 2L)
             )) +
             # highest band
             ggplot2::geom_rect(ggplot2::aes(
                 xmin = -Inf, xmax = Inf,
-                ymin = max(.data$y),
+                ymin = max(.data$.__y__.),
                 ymax = Inf,
                 fill = "1"
             )) +
@@ -106,19 +124,19 @@ ggtable <- function(
         ggplot2::geom_text() +
         ggplot2::scale_x_continuous(
             name = NULL,
-            limits = c(0L, max(data$x)),
+            limits = c(0L, max(data$.__x__.)),
             # breaks should be header coord value
-            breaks = seq_len(max(data$x)) - 1L + x_labels_nudge,
+            breaks = seq_len(max(data$.__x__.)) - 1L + x_labels_nudge,
             # minor_breaks are the table separator line
-            minor_breaks = c(0L, seq_len(max(data$x))),
+            minor_breaks = c(0L, seq_len(max(data$.__x__.))),
             labels = colnms, expand = x_scale_expand,
             position = x_labels_position
         ) +
         ggplot2::scale_y_continuous(
             name = NULL,
-            limits = c(0L, max(data$y)),
-            breaks = seq_len(max(data$y)) - 1L + y_labels_nudge,
-            minor_breaks = c(0L, seq_len(max(data$y))),
+            limits = c(0L, max(data$.__y__.)),
+            breaks = seq_len(max(data$.__y__.)) - 1L + y_labels_nudge,
+            minor_breaks = c(0L, seq_len(max(data$.__y__.))),
             labels = ylabels,
             expand = y_scale_expand,
             position = y_labels_position

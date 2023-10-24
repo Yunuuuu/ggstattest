@@ -6,7 +6,9 @@
 \usage{
 ggtable(
   data,
+  cols = NULL,
   ylabels = NULL,
+  mapping = aes(),
   nudge_x = 0.5,
   nudge_y = 0.5,
   hjust = 0.5,
@@ -27,8 +29,17 @@ ggtable(
 \arguments{
 \item{data}{A matrix or data.frame-like data.}
 
-\item{ylabels}{A string, in \code{colnames(data)}, specifies the column used as
-the y-axis text.}
+\item{cols}{Columns used to create table. If \code{NULL}, will select all columns
+except column specified by \code{ylabels}.}
+
+\item{ylabels}{Extract a single column used as the y-axis text, passed to
+\code{var} argument in \link[dplyr:pull]{pull}.}
+
+\item{mapping}{List of aesthetic mappings to use for plot, created by \link{aes}.
+This will be added into the default \link[ggplot2:ggplot]{ggplot} object to
+change the default aesthetic mappings. The column selected in \code{cols} will be
+collected in \code{.__value__.} with column names in \code{.__name__.}. This will be
+helpful if you want to adjust aesthetic by specific column or row.}
 
 \item{nudge_x, nudge_y}{Horizontal and vertical adjustment [0, 1] to nudge
 text by in a table cell.}
