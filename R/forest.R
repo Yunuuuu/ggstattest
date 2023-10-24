@@ -49,7 +49,7 @@ ggforest <- function(
     data, left_table = NULL, right_table = NULL, ylabels = NULL,
     nudge_y = 0.5, y_labels_nudge = 0.5, y_labels_position = "left",
     point_shape = 16L, point_size = 4L, point_color = "darkred",
-    null_line_at = 0L, null_linetype = "dashed", null_line_params = list(),
+    null_line_at = 1L, null_linetype = "dashed", null_line_params = list(),
     errorbar_width = 0.15, errorbar_params = list(),
     xlab = NULL, xlim = NULL, xbreaks = waiver(),
     xlabels = scales::number_format(accuracy = 0.1),
@@ -95,9 +95,6 @@ ggforest <- function(
         x = .data$estimate,
         y = .data$y - 1L + .env$nudge_y
     ))
-    xlim <- xlim %||%
-        range(c(data[[1L]], data[[2L]], data[[3L]]), na.rm = TRUE)
-    xlim <- sort(xlim)
     if (isTRUE(add_band)) {
         if (startsWith(x_scale_trans, "log")) {
             band_min <- 0L
@@ -126,6 +123,7 @@ ggforest <- function(
             )) +
             ggplot2::scale_fill_manual(values = band_col, guide = "none")
     }
+
     p <- p +
         ggplot2::geom_point(
             shape = point_shape,
@@ -143,11 +141,33 @@ ggforest <- function(
             xintercept = null_line_at,
             linetype = null_linetype,
             !!!null_line_params
-        ))
+        )) +
+        ggplot2::scale_x_continuous(
+            name = xlab, limits = xlim, breaks = xbreaks, labels = xlabels,
+            trans = x_scale_trans, expand = x_scale_expand
+        ) +
+        ggplot2::scale_y_continuous(
+            name = NULL, limits = c(0L, max(data$y) + 1L),
+            expand = y_scale_expand,
+            # breaks should be lab coord value
+            breaks = ybreaks,
+            labels = ylabels,
+            # minor_breaks are the table separator line
+            minor_breaks = c(0L, seq_len(max(data$y) + 1L)),
+            position = y_labels_position
+        ) +
+        ggplot2::coord_cartesian(clip = "off") +
+        ggplot2::theme(
+            axis.ticks.y = ggplot2::element_blank(),
+            panel.grid.major.y = ggplot2::element_blank()
+        )
     if (isTRUE(add_arrow)) {
+        xdata <- c(data[[1L]], data[[2L]], data[[3L]])
+        xranges <- range(xdata, na.rm = TRUE, finite = TRUE)
         # plot arrow
         # this df has the text labels
-        small_amount <- (max(xlim) - min(xlim)) / rep_len(arrow_weights, 2L)
+        small_amount <- (max(xranges) - min(xranges)) /
+            rep_len(arrow_weights, 2L)
         arrow_text_df <- data.frame(
             text = arrow_labels,
             y = c(0L, 0L),
@@ -159,8 +179,8 @@ ggforest <- function(
                 null_line_at + small_amount[2L]
             ),
             xend = c(
-                min(xlim) + small_amount[1L],
-                max(xlim) - small_amount[2L]
+                min(xranges) + small_amount[1L],
+                max(xranges) - small_amount[2L]
             ),
             y = c(1L, 1L)
         )
@@ -171,7 +191,7 @@ ggforest <- function(
         arrow_text_df$x <- (arrow_df$xstart + arrow_df$xend) / 2L
         arrow_df <- arrow_df[good_idx, , drop = FALSE]
         arrow_text_df <- arrow_text_df[good_idx, , drop = FALSE]
-        # if (null_line_at - small_amount <= xlim[1L]) {
+        # if (null_line_at - small_amount <= xranges[1L]) {
         #     p <- p +
         #         ggplot2::annotate("segment",
         #             x = null_line_at - small_amount,
@@ -179,7 +199,7 @@ ggforest <- function(
         #             arrow = grid::arrow()
         #         )
         # }
-        # if (null_line_at + small_amount >= xlim[2L]) {
+        # if (null_line_at + small_amount >= xranges[2L]) {
         #     p <- p +
         #         ggplot2::annotate("segment",
         #             x = null_line_at + small_amount,
@@ -205,20 +225,15 @@ ggforest <- function(
                         label = .data$text, hjust = .data$hjust
                     )
                 ) +
-                ggplot2::scale_y_continuous(
-                    name = NULL, expand = c(0, 0),
-                    limits = c(-0.5, 1.5), breaks = NULL, labels = NULL
-                ) +
+                ggplot2::expand_limits(x = xdata) +
                 ggplot2::scale_x_continuous(
-                    name = NULL, limits = xlim,
-                    breaks = NULL, labels = NULL,
+                    name = NULL,
+                    limits = xlim, breaks = NULL, labels = NULL,
                     trans = x_scale_trans, expand = x_scale_expand
                 ) +
-                ggplot2::theme(
-                    panel.background = ggplot2::element_blank(),
-                    plot.background = ggplot2::element_blank(),
-                    panel.border = ggplot2::element_blank(),
-                    plot.margin = ggplot2::margin()
+                ggplot2::scale_y_continuous(
+                    name = NULL, expand = c(0L, 0L),
+                    limits = c(-0.5, 1.5), breaks = NULL, labels = NULL
                 )
         } else {
             arrows_plot <- NULL
@@ -226,26 +241,7 @@ ggforest <- function(
     } else {
         arrows_plot <- NULL
     }
-    p <- p +
-        ggplot2::scale_x_continuous(
-            name = xlab, limits = xlim, breaks = xbreaks, labels = xlabels,
-            trans = x_scale_trans, expand = x_scale_expand
-        ) +
-        ggplot2::scale_y_continuous(
-            name = NULL, limits = c(0L, max(data$y) + 1L),
-            expand = y_scale_expand,
-            # breaks should be lab coord value
-            breaks = ybreaks,
-            labels = ylabels,
-            # minor_breaks are the table separator line
-            minor_breaks = c(0L, seq_len(max(data$y) + 1L)),
-            position = y_labels_position
-        ) +
-        ggplot2::coord_cartesian(clip = "off") +
-        ggplot2::theme(
-            axis.ticks.y = ggplot2::element_blank(),
-            panel.grid.major.y = ggplot2::element_blank()
-        )
+
     ggleft_table <- ggright_table <- NULL
     if (!is.null(left_table)) {
         ggleft_table <- rlang::inject(ggtable(
@@ -270,17 +266,17 @@ ggforest <- function(
     if (length(lst) > 1L) {
         if (idx[1L]) {
             design <- list(
-                patchwork::area(1, 1, 1, 1),
-                patchwork::area(1, 2, 1, 2),
-                patchwork::area(1, 3, 1, 3),
-                patchwork::area(2, 2, 2, 2)
+                patchwork::area(1, 1),
+                patchwork::area(1, 2),
+                patchwork::area(1, 3),
+                patchwork::area(2, 2)
             )
         } else {
             design <- list(
                 NULL,
-                patchwork::area(1, 1, 1, 1),
-                patchwork::area(1, 2, 1, 2),
-                patchwork::area(2, 1, 2, 1)
+                patchwork::area(1, 1),
+                patchwork::area(1, 2),
+                patchwork::area(2, 1)
             )
         }
         design <- do.call(c, design[idx])

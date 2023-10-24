@@ -15,7 +15,7 @@ ggforest(
   point_shape = 16L,
   point_size = 4L,
   point_color = "darkred",
-  null_line_at = 0L,
+  null_line_at = 1L,
   null_linetype = "dashed",
   null_line_params = list(),
   errorbar_width = 0.15,
