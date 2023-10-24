@@ -83,11 +83,11 @@ ggforest <- function(
     data <- data.frame(
         estimate = data[[1L]], ci_low = data[[2L]], ci_high = data[[3L]]
     )
-    data$y <- seq_len(nrow(data))
+    data$y <- seq_len(nrow(data)) - 1L
     if (rlang::quo_is_null(ylabels_sel)) {
         ybreaks <- NULL
     } else {
-        ybreaks <- seq_len(max(data$y)) - 1L + y_labels_nudge
+        ybreaks <- data$y + y_labels_nudge
     }
     p <- ggplot2::ggplot(data, mapping = aes(
         x = .data$estimate,
@@ -107,20 +107,20 @@ ggforest <- function(
             ggplot2::geom_rect(ggplot2::aes(
                 xmin = .env$band_min, xmax = Inf,
                 ymin = -Inf, ymax = 0L,
-                fill = "0"
+                fill = "1"
             )) +
             # plot band
             ggplot2::geom_rect(ggplot2::aes(
                 xmin = .env$band_min, xmax = Inf,
-                ymin = .data$y - 1L, ymax = .data$y,
+                ymin = .data$y, ymax = .data$y + 1L,
                 fill = factor(.data$y %% 2L)
             )) +
             # highest band
             ggplot2::geom_rect(ggplot2::aes(
                 xmin = .env$band_min, xmax = Inf,
-                ymin = max(.data$y),
+                ymin = max(.data$y) + 1L,
                 ymax = Inf,
-                fill = "1"
+                fill = "0"
             )) +
             ggplot2::scale_fill_manual(values = band_col, guide = "none")
     }
@@ -145,7 +145,7 @@ ggforest <- function(
     if (isTRUE(add_arrow)) {
         # plot arrow
         # this df has the text labels
-        small_amount <- diff(xlim) / rep_len(arrow_weights, 2L)
+        small_amount <- (max(xlim) - min(xlim)) / rep_len(arrow_weights, 2L)
         arrow_text_df <- data.frame(
             text = arrow_labels,
             y = c(0L, 0L),
@@ -156,7 +156,10 @@ ggforest <- function(
                 null_line_at - small_amount[1L],
                 null_line_at + small_amount[2L]
             ),
-            xend = c(xlim[1] + small_amount[1L], xlim[2] - small_amount[2L]),
+            xend = c(
+                min(xlim) + small_amount[1L],
+                max(xlim) - small_amount[2L]
+            ),
             y = c(1L, 1L)
         )
         good_idx <- c(
@@ -202,7 +205,7 @@ ggforest <- function(
                 ) +
                 ggplot2::scale_y_continuous(
                     name = NULL, expand = c(0, 0),
-                    limits = c(-0.5, 1.75), breaks = NULL, labels = NULL
+                    limits = c(-0.5, 1.5), breaks = NULL, labels = NULL
                 ) +
                 ggplot2::scale_x_continuous(
                     name = NULL, limits = xlim,
@@ -227,13 +230,13 @@ ggforest <- function(
             trans = x_scale_trans, expand = x_scale_expand
         ) +
         ggplot2::scale_y_continuous(
-            name = NULL, limits = c(0L, max(data$y)),
+            name = NULL, limits = c(0L, max(data$y) + 1L),
             expand = y_scale_expand,
             # breaks should be lab coord value
             breaks = ybreaks,
             labels = ylabels,
             # minor_breaks are the table separator line
-            minor_breaks = c(0L, seq_len(max(data$y))),
+            minor_breaks = c(0L, seq_len(max(data$y) + 1L)),
             position = y_labels_position
         ) +
         ggplot2::coord_cartesian(clip = "off") +

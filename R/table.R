@@ -11,7 +11,7 @@
 #' This will be added into the default [ggplot][ggplot2::ggplot] object to
 #' change the default aesthetic mappings. The column selected in `cols` will be
 #' collected in `.__value__.` with column names in `.__name__.`. This will be
-#' helpful if you want to adjust aesthetic by specific column or row. 
+#' helpful if you want to adjust aesthetic by specific column or row.
 #' @param nudge_x,nudge_y Horizontal and vertical adjustment \[0, 1\] to nudge
 #' text by in a table cell.
 #' @param hjust,vjust Horizontal and vertical justification \[0, 1\] of text in
@@ -76,21 +76,21 @@ ggtable <- function(
     colnms <- names(pos)
     data <- dplyr::mutate(data, dplyr::across(!!cols, .fns = as.character))
     # use complex name to avoid exist columns
-    data$.__y__. <- seq_len(nrow(data))
+    data$.__y__. <- seq_len(nrow(data)) - 1L
     data <- tidyr::pivot_longer(
         data,
         cols = tidyselect::all_of(colnms),
         names_to = ".__name__.",
         values_to = ".__value__."
     )
-    data$.__x__. <- as.integer(factor(data$.__name__., levels = colnms))
+    data$.__x__. <- as.integer(factor(data$.__name__., levels = colnms)) - 1L
     data$.__hjust__. <- hjust
     data$.__vjust__. <- vjust
     p <- ggplot2::ggplot(
         data = data,
         ggplot2::aes(
-            x = .data$.__x__. - 1L + .env$nudge_x,
-            y = .data$.__y__. - 1L + .env$nudge_y,
+            x = .data$.__x__. + .env$nudge_x,
+            y = .data$.__y__. + .env$nudge_y,
             hjust = .data$.__hjust__.,
             vjust = .data$.__vjust__.,
             label = .data$.__value__.
@@ -103,20 +103,20 @@ ggtable <- function(
             ggplot2::geom_rect(ggplot2::aes(
                 xmin = -Inf, xmax = Inf,
                 ymin = -Inf, ymax = 0L,
-                fill = "0"
+                fill = "1"
             )) +
             # plot band
             ggplot2::geom_rect(ggplot2::aes(
                 xmin = -Inf, xmax = Inf,
-                ymin = .data$.__y__. - 1L, ymax = .data$.__y__.,
+                ymin = .data$.__y__., ymax = .data$.__y__. + 1L,
                 fill = factor(.data$.__y__. %% 2L)
             )) +
             # highest band
             ggplot2::geom_rect(ggplot2::aes(
                 xmin = -Inf, xmax = Inf,
-                ymin = max(.data$.__y__.),
+                ymin = max(.data$.__y__.) + 1L,
                 ymax = Inf,
-                fill = "1"
+                fill = "0"
             )) +
             ggplot2::scale_fill_manual(values = band_col, guide = "none")
     }
@@ -124,19 +124,19 @@ ggtable <- function(
         ggplot2::geom_text() +
         ggplot2::scale_x_continuous(
             name = NULL,
-            limits = c(0L, max(data$.__x__.)),
+            limits = c(0L, max(data$.__x__.) + 1L),
             # breaks should be header coord value
-            breaks = seq_len(max(data$.__x__.)) - 1L + x_labels_nudge,
+            breaks = seq_len(max(data$.__x__.) + 1L) - 1L + x_labels_nudge,
             # minor_breaks are the table separator line
-            minor_breaks = c(0L, seq_len(max(data$.__x__.))),
+            minor_breaks = c(0L, seq_len(max(data$.__x__.) + 1L)),
             labels = colnms, expand = x_scale_expand,
             position = x_labels_position
         ) +
         ggplot2::scale_y_continuous(
             name = NULL,
-            limits = c(0L, max(data$.__y__.)),
-            breaks = seq_len(max(data$.__y__.)) - 1L + y_labels_nudge,
-            minor_breaks = c(0L, seq_len(max(data$.__y__.))),
+            limits = c(0L, max(data$.__y__.) + 1L),
+            breaks = seq_len(max(data$.__y__.) + 1L) - 1L + y_labels_nudge,
+            minor_breaks = c(0L, seq_len(max(data$.__y__.) + 1L)),
             labels = ylabels,
             expand = y_scale_expand,
             position = y_labels_position
