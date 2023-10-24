@@ -13,6 +13,7 @@ ggtable(
   nudge_y = 0.5,
   hjust = 0.5,
   vjust = 0.5,
+  ...,
   x_scale_expand = c(0L, 0L),
   y_scale_expand = c(0L, 0L),
   x_labels_nudge = 0.5,
@@ -47,6 +48,8 @@ text by in a table cell.}
 
 \item{hjust, vjust}{Horizontal and vertical justification [0, 1] of text in
 each cell of table.}
+
+\item{...}{Other arguments passed to \link[ggplot2:geom_text]{geom_text}.}
 
 \item{x_scale_expand, y_scale_expand}{A vector of range expansion
 constants used to add some padding around the data to ensure that they are

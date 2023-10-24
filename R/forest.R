@@ -70,7 +70,7 @@ ggforest <- function(
     y_labels_position <- match.arg(y_labels_position, c("left", "right"))
     ylabels_sel <- rlang::enquo(ylabels)
     if (!rlang::quo_is_null(ylabels_sel)) {
-        ylabels_idx <- tidyselect::vars_pull(data, var = !!ylabels_sel)
+        ylabels_idx <- tidyselect::vars_pull(names(data), var = !!ylabels_sel)
         ylabels <- data[[ylabels_idx]]
         data[[ylabels_idx]] <- NULL
     }
@@ -93,7 +93,7 @@ ggforest <- function(
     }
     p <- ggplot2::ggplot(data, mapping = aes(
         x = .data$estimate,
-        y = .data$y - 1L + .env$nudge_y
+        y = .data$y + .env$nudge_y
     ))
     if (isTRUE(add_band)) {
         if (startsWith(x_scale_trans, "log")) {
@@ -103,27 +103,35 @@ ggforest <- function(
         }
         p <- p +
             # lowest band
-            ggplot2::geom_rect(ggplot2::aes(
-                xmin = .env$band_min, xmax = Inf,
-                ymin = -Inf, ymax = 0L,
-                fill = "1"
-            )) +
+            ggplot2::geom_rect(
+                ggplot2::aes(
+                    xmin = .env$band_min, xmax = Inf,
+                    ymin = -Inf, ymax = 0L,
+                    fill = "1"
+                ),
+                show.legend = FALSE
+            ) +
             # plot band
-            ggplot2::geom_rect(ggplot2::aes(
-                xmin = .env$band_min, xmax = Inf,
-                ymin = .data$y, ymax = .data$y + 1L,
-                fill = factor(.data$y %% 2L)
-            )) +
+            ggplot2::geom_rect(
+                ggplot2::aes(
+                    xmin = .env$band_min, xmax = Inf,
+                    ymin = .data$y, ymax = .data$y + 1L,
+                    fill = factor(.data$y %% 2L)
+                ),
+                show.legend = FALSE
+            ) +
             # highest band
-            ggplot2::geom_rect(ggplot2::aes(
-                xmin = .env$band_min, xmax = Inf,
-                ymin = max(.data$y) + 1L,
-                ymax = Inf,
-                fill = "0"
-            )) +
+            ggplot2::geom_rect(
+                ggplot2::aes(
+                    xmin = .env$band_min, xmax = Inf,
+                    ymin = max(.data$y) + 1L,
+                    ymax = Inf,
+                    fill = "0"
+                ),
+                show.legend = FALSE
+            ) +
             ggplot2::scale_fill_manual(values = band_col, guide = "none")
     }
-
     p <- p +
         ggplot2::geom_point(
             shape = point_shape,

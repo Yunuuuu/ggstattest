@@ -17,6 +17,7 @@
 #' text by in a table cell.
 #' @param hjust,vjust Horizontal and vertical justification \[0, 1\] of text in
 #' each cell of table.
+#' @param ... Other arguments passed to [geom_text][ggplot2::geom_text].
 #' @param x_scale_expand,y_scale_expand A vector of range expansion
 #' constants used to add some padding around the data to ensure that they are
 #' placed some distance away from the axes. See
@@ -36,7 +37,7 @@
 #' @export
 ggtable <- function(
     data, cols = NULL, ylabels = NULL, mapping = aes(),
-    nudge_x = 0.5, nudge_y = 0.5, hjust = 0.5, vjust = 0.5,
+    nudge_x = 0.5, nudge_y = 0.5, hjust = 0.5, vjust = 0.5, ...,
     x_scale_expand = c(0L, 0L), y_scale_expand = c(0L, 0L),
     x_labels_nudge = 0.5, x_labels_position = NULL, x_labels_element = NULL,
     y_labels_nudge = 0.5, y_labels_position = NULL, y_labels_element = NULL,
@@ -85,15 +86,11 @@ ggtable <- function(
         values_to = ".__value__."
     )
     data$.__x__. <- as.integer(factor(data$.__name__., levels = colnms)) - 1L
-    data$.__hjust__. <- hjust
-    data$.__vjust__. <- vjust
     p <- ggplot2::ggplot(
         data = data,
         ggplot2::aes(
             x = .data$.__x__. + .env$nudge_x,
             y = .data$.__y__. + .env$nudge_y,
-            hjust = .data$.__hjust__.,
-            vjust = .data$.__vjust__.,
             label = .data$.__value__.
         )
     )
@@ -101,28 +98,37 @@ ggtable <- function(
     if (isTRUE(add_band)) {
         p <- p +
             # lowest band
-            ggplot2::geom_rect(ggplot2::aes(
-                xmin = -Inf, xmax = Inf,
-                ymin = -Inf, ymax = 0L,
-                fill = "1"
-            )) +
+            ggplot2::geom_rect(
+                ggplot2::aes(
+                    xmin = -Inf, xmax = Inf,
+                    ymin = -Inf, ymax = 0L,
+                    fill = "1"
+                ),
+                show.legend = FALSE
+            ) +
             # plot band
-            ggplot2::geom_rect(ggplot2::aes(
-                xmin = -Inf, xmax = Inf,
-                ymin = .data$.__y__., ymax = .data$.__y__. + 1L,
-                fill = factor(.data$.__y__. %% 2L)
-            )) +
+            ggplot2::geom_rect(
+                ggplot2::aes(
+                    xmin = -Inf, xmax = Inf,
+                    ymin = .data$.__y__., ymax = .data$.__y__. + 1L,
+                    fill = factor(.data$.__y__. %% 2L)
+                ),
+                show.legend = FALSE
+            ) +
             # highest band
-            ggplot2::geom_rect(ggplot2::aes(
-                xmin = -Inf, xmax = Inf,
-                ymin = max(.data$.__y__.) + 1L,
-                ymax = Inf,
-                fill = "0"
-            )) +
+            ggplot2::geom_rect(
+                ggplot2::aes(
+                    xmin = -Inf, xmax = Inf,
+                    ymin = max(.data$.__y__.) + 1L,
+                    ymax = Inf,
+                    fill = "0"
+                ),
+                show.legend = FALSE
+            ) +
             ggplot2::scale_fill_manual(values = band_col, guide = "none")
     }
     p +
-        ggplot2::geom_text() +
+        ggplot2::geom_text(hjust = hjust, vjust = vjust, ...) +
         ggplot2::scale_x_continuous(
             name = NULL,
             limits = c(0L, max(data$.__x__.) + 1L),
