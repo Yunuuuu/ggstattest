@@ -8,6 +8,7 @@ ggforest(
   data,
   left_table = NULL,
   right_table = NULL,
+  cols = NULL,
   ylabels = NULL,
   nudge_y = 0.5,
   y_labels_nudge = 0.5,
@@ -41,12 +42,17 @@ ggforest(
 )
 }
 \arguments{
-\item{data}{A matrix or data.frame-like data. Excluding the \code{ylabels} column,
-the first three column will be regarded as the forest point estimate and
-confidence interval (lower and higher).}
+\item{data}{A data.frame-like data. Excluding the \code{ylabels} column, the first
+three column will be regarded as the forest point estimate and confidence
+interval (lower and higher).}
 
 \item{left_table, right_table}{Add a table in the left or right, details see
 \link{ggtable}.}
+
+\item{cols}{<\code{\link[tidyselect:language]{tidy-select}}>. Columns used to
+create forest plot. It's mandatory to select \code{3} columns. All selected
+columns must be numeric. If \code{NULL}, will select the first 3 columns after
+excluding column specified by \code{ylabels}.}
 
 \item{ylabels}{Extract a single column used as the y-axis text, passed to
 \code{var} argument in \link[tidyselect:vars_pull]{pull}.}

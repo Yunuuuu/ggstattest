@@ -61,9 +61,11 @@ ggtable <- function(
     x_labels_position <- match.arg(x_labels_position, c("bottom", "top"))
     y_labels_position <- match.arg(y_labels_position, c("left", "right"))
 
+    ybreaks <- NULL
     ylabels_sel <- rlang::enquo(ylabels)
     if (!rlang::quo_is_null(ylabels_sel)) {
         ylabels <- dplyr::pull(data, var = !!ylabels_sel)
+        ybreaks <- seq_len(nrow(data)) - 1L + y_labels_nudge
     }
     cols <- rlang::enquo(cols)
     if (rlang::quo_is_null(cols)) {
@@ -142,7 +144,7 @@ ggtable <- function(
         ggplot2::scale_y_continuous(
             name = NULL,
             limits = c(0L, max(data$.__y__.) + 1L),
-            breaks = seq_len(max(data$.__y__.) + 1L) - 1L + y_labels_nudge,
+            breaks = ybreaks,
             minor_breaks = c(0L, seq_len(max(data$.__y__.) + 1L)),
             labels = ylabels,
             expand = y_scale_expand,
