@@ -49,7 +49,7 @@ confidence interval (lower and higher).}
 \link{ggtable}.}
 
 \item{ylabels}{Extract a single column used as the y-axis text, passed to
-\code{var} argument in \link[dplyr:pull]{pull}.}
+\code{var} argument in \link[tidyselect:vars_pull]{pull}.}
 
 \item{nudge_y}{Vertical adjustment to nudge all errorbar or table text by.}
 

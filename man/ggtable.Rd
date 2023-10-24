@@ -29,11 +29,12 @@ ggtable(
 \arguments{
 \item{data}{A matrix or data.frame-like data.}
 
-\item{cols}{Columns used to create table. If \code{NULL}, will select all columns
-except column specified by \code{ylabels}.}
+\item{cols}{<\code{\link[tidyselect:language]{tidy-select}}>. Columns used to
+create table. If \code{NULL}, will select all columns except column specified by
+\code{ylabels}.}
 
 \item{ylabels}{Extract a single column used as the y-axis text, passed to
-\code{var} argument in \link[dplyr:pull]{pull}.}
+\code{var} argument in \link[tidyselect:vars_pull]{pull}.}
 
 \item{mapping}{List of aesthetic mappings to use for plot, created by \link{aes}.
 This will be added into the default \link[ggplot2:ggplot]{ggplot} object to

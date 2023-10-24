@@ -3,10 +3,11 @@
 #' Create a table in ggplot2 style
 #'
 #' @param data A matrix or data.frame-like data.
-#' @param cols Columns used to create table. If `NULL`, will select all columns
-#' except column specified by `ylabels`.
+#' @param cols <[`tidy-select`][tidyselect::select_helpers]>. Columns used to
+#' create table. If `NULL`, will select all columns except column specified by
+#' `ylabels`.
 #' @param ylabels Extract a single column used as the y-axis text, passed to
-#' `var` argument in [pull][dplyr::pull].
+#' `var` argument in [pull][tidyselect::vars_pull].
 #' @param mapping List of aesthetic mappings to use for plot, created by [aes].
 #' This will be added into the default [ggplot][ggplot2::ggplot] object to
 #' change the default aesthetic mappings. The column selected in `cols` will be

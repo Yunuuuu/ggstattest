@@ -70,7 +70,9 @@ ggforest <- function(
     y_labels_position <- match.arg(y_labels_position, c("left", "right"))
     ylabels_sel <- rlang::enquo(ylabels)
     if (!rlang::quo_is_null(ylabels_sel)) {
-        ylabels <- dplyr::pull(data, var = !!ylabels_sel)
+        ylabels_idx <- tidyselect::vars_pull(data, var = !!ylabels_sel)
+        ylabels <- data[[ylabels_idx]]
+        data[[ylabels_idx]] <- NULL
     }
     assert_bool(add_arrow)
     assert_bool(add_band)
