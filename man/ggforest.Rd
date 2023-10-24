@@ -48,8 +48,8 @@ confidence interval (lower and higher).}
 \item{left_table, right_table}{Add a table in the left or right, details see
 \link{ggtable}.}
 
-\item{ylabels}{A string, in \code{colnames(data)}, specifies the column used as
-the y-axis text.}
+\item{ylabels}{Extract a single column used as the y-axis text, passed to
+\code{var} argument in \link[dplyr:pull]{pull}.}
 
 \item{nudge_y}{Vertical adjustment to nudge all errorbar or table text by.}
 

@@ -5,8 +5,6 @@
 #' confidence interval (lower and higher).
 #' @param left_table,right_table Add a table in the left or right, details see
 #' [ggtable].
-#' @param ylabels A string, in `colnames(data)`, specifies the column used as
-#' the y-axis text.
 #' @param nudge_y Vertical adjustment to nudge all errorbar or table text by.
 #' @param y_labels_nudge Vertical adjustment in \[0, 1\] of y-axis labels.
 #' @param y_labels_position The position of the y-axis labels, left or right for
@@ -70,13 +68,9 @@ ggforest <- function(
         cli::cli_abort("{.arg data} must be a {.cls data.frame} with at least 3 columns")
     }
     y_labels_position <- match.arg(y_labels_position, c("left", "right"))
-    if (!is.null(ylabels)) {
-        if (!rlang::is_string(ylabels, names(data))) {
-            cli::cli_abort("Cannot find {.val {ylabels}} in {.arg data}")
-        }
-        id <- ylabels
-        ylabels <- data[[id]]
-        data[[id]] <- NULL
+    ylabels_sel <- rlang::enquo(ylabels)
+    if (!rlang::quo_is_null(ylabels_sel)) {
+        ylabels <- dplyr::pull(data, var = !!ylabels_sel)
     }
     assert_bool(add_arrow)
     assert_bool(add_band)
@@ -90,7 +84,7 @@ ggforest <- function(
         estimate = data[[1L]], ci_low = data[[2L]], ci_high = data[[3L]]
     )
     data$y <- seq_len(nrow(data))
-    if (is.null(ylabels)) {
+    if (rlang::quo_is_null(ylabels_sel)) {
         ybreaks <- NULL
     } else {
         ybreaks <- seq_len(max(data$y)) - 1L + y_labels_nudge
