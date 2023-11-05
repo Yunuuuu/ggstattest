@@ -269,7 +269,7 @@ ggforest <- function(
                 ) +
                 ggplot2::scale_y_continuous(
                     name = NULL, expand = c(0L, 0L),
-                    limits = c(-0.5, 1.5), breaks = NULL, labels = NULL
+                    limits = c(-0.5, 1.75), breaks = NULL, labels = NULL
                 ) +
                 ggplot2::theme(
                     plot.background = ggplot2::element_blank(),
