@@ -129,8 +129,16 @@ ggtable <- function(
             ) +
             ggplot2::scale_fill_manual(values = band_col, guide = "none")
     }
+    if (!is.null(hjust) && !is.null(vjust)) {
+        p <- p + ggplot2::geom_text(hjust = hjust, vjust = vjust, ...)
+    } else if (!is.null(hjust)) {
+        p <- p + ggplot2::geom_text(hjust = hjust, ...)
+    } else if (!is.null(vjust)) {
+        p <- p + ggplot2::geom_text(vjust = vjust, ...)
+    } else {
+        p <- p + ggplot2::geom_text(...)
+    }
     p +
-        ggplot2::geom_text(hjust = hjust, vjust = vjust, ...) +
         ggplot2::scale_x_continuous(
             name = NULL,
             limits = c(0L, max(data$.__x__.) + 1L),
