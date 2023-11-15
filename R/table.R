@@ -103,18 +103,20 @@ ggtable <- function(
             ggplot2::geom_rect(
                 ggplot2::aes(
                     xmin = -Inf, xmax = Inf,
-                    ymin = -Inf, ymax = 0L,
-                    fill = "1"
+                    ymin = -Inf, ymax = 0L
                 ),
+                fill = band_col[2L],
+                color = band_col[2L],
                 show.legend = FALSE
             ) +
             # plot band
             ggplot2::geom_rect(
                 ggplot2::aes(
                     xmin = -Inf, xmax = Inf,
-                    ymin = .data$.__y__., ymax = .data$.__y__. + 1L,
-                    fill = factor(.data$.__y__. %% 2L)
+                    ymin = .data$.__y__., ymax = .data$.__y__. + 1L
                 ),
+                fill = band_col[(data$.__y__. %% 2L) + 1L],
+                color = band_col[(data$.__y__. %% 2L) + 1L],
                 show.legend = FALSE
             ) +
             # highest band
@@ -122,12 +124,12 @@ ggtable <- function(
                 ggplot2::aes(
                     xmin = -Inf, xmax = Inf,
                     ymin = max(.data$.__y__.) + 1L,
-                    ymax = Inf,
-                    fill = "0"
+                    ymax = Inf
                 ),
+                fill = band_col[1L],
+                color = band_col[1L],
                 show.legend = FALSE
-            ) +
-            ggplot2::scale_fill_manual(values = band_col, guide = "none")
+            )
     }
     if (!is.null(hjust) && !is.null(vjust)) {
         p <- p + ggplot2::geom_text(hjust = hjust, vjust = vjust, ...)
