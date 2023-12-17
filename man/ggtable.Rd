@@ -40,8 +40,8 @@ create table. If \code{NULL}, will select all columns except column specified by
 \item{mapping}{List of aesthetic mappings to use for plot, created by \link{aes}.
 This will be added into the default \link[ggplot2:ggplot]{ggplot} object to
 change the default aesthetic mappings. The column selected in \code{cols} will be
-collected in \code{.__value__.} with column names in \code{.__name__.}. This will be
-helpful if you want to adjust aesthetic by specific column or row.}
+collected in \code{.label} with column names in \code{.cols}. This will be helpful if
+you want to adjust aesthetic by specific column or row.}
 
 \item{nudge_x, nudge_y}{Horizontal and vertical adjustment [0, 1] to nudge
 text by in a table cell.}
