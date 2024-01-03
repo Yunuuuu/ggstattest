@@ -10,10 +10,18 @@ ggplot2::rel
 #' @export
 ggplot2::waiver
 
+is.waive <- function(x) {
+    inherits(x, "waiver")
+}
+
 is_rel <- function(x) inherits(x, "rel")
 
 `%||%` <- function(a, b) {
     if (!is.null(a)) a else b
+}
+
+`%|w|%` <- function(a, b) {
+    if (!is.waive(a)) a else b
 }
 
 #' Rename elements in a list, data.frame or vector

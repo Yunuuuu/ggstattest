@@ -53,7 +53,8 @@ ggforest <- function(
     data, left_table = NULL, right_table = NULL, cols = NULL, ylabels = NULL,
     nudge_y = 0.5, y_labels_nudge = 0.5, y_labels_position = "left",
     point_shape = 16L, point_size = 4L, point_color = "darkred",
-    null_line_at = 1L, null_linetype = "dashed", null_line_params = list(),
+    null_line_at = waiver(), null_linetype = "dashed",
+    null_line_params = list(),
     errorbar_width = 0.15, errorbar_params = list(),
     xlab = NULL, xlim = NULL, xbreaks = waiver(),
     xlabels = scales::number_format(accuracy = 0.1),
@@ -68,7 +69,7 @@ ggforest <- function(
     ),
     add_band = TRUE, band_col = c("white", "#eff3f2"),
     forest_width = 5L, widths = NULL, heights = c(30L, 1L)) {
-    if (!inherits(data, "data.frame")) {
+    if (!inherits(data, "data.frame") || ncol(data) < 3L) {
         cli::cli_abort("{.arg data} must be a {.cls data.frame} with at least 3 columns")
     }
     y_labels_position <- match.arg(y_labels_position, c("left", "right"))
@@ -122,7 +123,7 @@ ggforest <- function(
     ))
     if (isTRUE(add_band)) {
         if (startsWith(x_scale_trans, "log")) {
-            band_min <- 0L
+            band_min <- 0L # nolint
         } else {
             band_min <- -Inf
         }
@@ -157,6 +158,11 @@ ggforest <- function(
             ) +
             ggplot2::scale_fill_manual(values = band_col, guide = "none")
     }
+    if (identical(x_scale_trans, "identity")) {
+        null_line_at <- null_line_at %|w|% 0L
+    } else {
+        null_line_at <- null_line_at %|w|% 1L
+    }
     p <- p +
         ggplot2::geom_point(
             shape = point_shape,
@@ -170,11 +176,13 @@ ggforest <- function(
             width = errorbar_width,
             !!!errorbar_params
         )) +
-        rlang::inject(ggplot2::geom_vline(
-            xintercept = null_line_at,
-            linetype = null_linetype,
-            !!!null_line_params
-        )) +
+        lapply(null_line_at, function(at) {
+            rlang::inject(ggplot2::geom_vline(
+                xintercept = at,
+                linetype = null_linetype,
+                !!!null_line_params
+            ))
+        }) +
         ggplot2::scale_x_continuous(
             name = xlab, limits = xlim, breaks = xbreaks, labels = xlabels,
             trans = x_scale_trans, expand = x_scale_expand
@@ -210,10 +218,8 @@ ggforest <- function(
             hjust = c(0.5, 0.5)
         )
         arrow_df <- data.frame(
-            xstart = c(
-                null_line_at - small_amount[1L],
-                null_line_at + small_amount[2L]
-            ),
+            xstart = range(null_line_at, na.rm = TRUE) +
+                c(-1L, 1L) * small_amount,
             xend = c(
                 min(xranges) + small_amount[1L],
                 max(xranges) - small_amount[2L]
