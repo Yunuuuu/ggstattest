@@ -33,6 +33,7 @@ ggforest(
   add_arrow = TRUE,
   arrow_labels = c("Lower", "Higher"),
   arrow_weights = 35L,
+  arrow_hjust = 0.5,
   grid_arrow = grid::arrow(angle = 15, type = "closed", length = grid::unit(0.1, "in")),
   add_band = TRUE,
   band_col = c("white", "#eff3f2"),
@@ -100,6 +101,9 @@ arrows to TRUE or this will have no effect.}
 
 \item{arrow_weights}{A numeric of length 2, reduce this if you want to
 shorten the arrow, and increase this if you want to lengthen the arrow.}
+
+\item{arrow_hjust}{A numeric of length 2, horizontal justification of arrow
+labels.}
 
 \item{grid_arrow}{An \link[grid:arrow]{arrow} object created.}
 

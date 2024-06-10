@@ -40,6 +40,8 @@
 #' @param add_arrow A bool, if `TRUE`, will add arrow below x-axis.
 #' @param arrow_labels String Vector, length 2. Labels for the arrows. Set
 #' arrows to TRUE or this will have no effect.
+#' @param arrow_hjust A numeric of length 2, horizontal justification of arrow
+#' labels.
 #' @param arrow_weights A numeric of length 2, reduce this if you want to
 #' shorten the arrow, and increase this if you want to lengthen the arrow.
 #' @param grid_arrow An [arrow][grid::arrow] object created.
@@ -63,6 +65,7 @@ ggforest <- function(
     add_arrow = TRUE,
     arrow_labels = c("Lower", "Higher"),
     arrow_weights = 35L, # increase will have a longer arrow
+    arrow_hjust = 0.5,
     grid_arrow = grid::arrow(
         angle = 15, type = "closed",
         length = grid::unit(0.1, "in")
@@ -215,7 +218,7 @@ ggforest <- function(
         arrow_text_df <- data.frame(
             text = arrow_labels,
             y = c(0L, 0L),
-            hjust = c(0.5, 0.5)
+            hjust = rep_len(arrow_hjust, 2L)
         )
         arrow_df <- data.frame(
             xstart = range(null_line_at, na.rm = TRUE) +
