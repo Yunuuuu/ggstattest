@@ -273,7 +273,9 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
                         !!!method_args
                     ))
                     if (isTRUE(hide_ns)) {
-                        if (!is.null(test_res$p.value) && test_res$p.value >= sig_level) {
+                        if (!is.null(test_res$p.value) &&
+                            (is.na(test_res$p.value) ||
+                                test_res$p.value >= sig_level)) {
                             return("...hide...")
                         }
                     }
