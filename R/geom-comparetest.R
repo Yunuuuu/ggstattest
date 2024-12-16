@@ -13,6 +13,8 @@
 #' the number of panel. Using [rel][ggplot2::rel] to signal values as the
 #' fraction of the difference between the horizontal segment and the maximal
 #' value of current group.  Default: `rel(0.01)`
+#' @param label_color,segment_color Color for the label and segment lines, if
+#' `NULL`, will use the mapped color.
 #' @param nudge_x,nudge_y Horizontal and vertical adjustment to nudge labels by.
 #'   Useful for offsetting text from segments, particularly on discrete scales.
 #'   A list or a numeric vector, this will be recycled to fit the number of
@@ -91,6 +93,8 @@ geom_comparetest <- function(mapping = NULL, data = NULL,
                              stat = "comparetest", position = "identity",
                              height = NULL, step_increase = NULL,
                              tip_length = NULL,
+                             label_color = NULL,
+                             segment_color = NULL,
                              nudge_x = 0, nudge_y = 0,
                              ...,
                              parse = FALSE, arrow = NULL, arrow_fill = NULL,
@@ -118,6 +122,8 @@ geom_comparetest <- function(mapping = NULL, data = NULL,
             arrow_fill = arrow_fill,
             lineend = lineend,
             linejoin = linejoin,
+            label_color = label_color,
+            segment_color = segment_color,
             na.rm = na.rm,
             orientation = orientation,
             ...
@@ -248,6 +254,7 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
     },
     draw_panel = function(self, data, panel_params, coord,
                           tip_length = NULL,
+                          label_color = NULL, segment_color = NULL,
                           parse = FALSE, arrow = NULL, arrow_fill = NULL,
                           lineend = "butt", linejoin = "round",
                           na.rm, flipped_aes = FALSE) {
@@ -346,6 +353,12 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
 
         if (flipped_aes) {
             label_data$angle <- label_data$angle - 90
+        }
+        if (!is.null(label_color)) {
+            seg_data$color <- label_color
+        }
+        if (!is.null(segment_color)) {
+            seg_data$color <- segment_color
         }
         grid::gList(
             # draw label

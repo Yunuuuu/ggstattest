@@ -13,6 +13,8 @@ geom_comparetest(
   height = NULL,
   step_increase = NULL,
   tip_length = NULL,
+  label_color = NULL,
+  segment_color = NULL,
   nudge_x = 0,
   nudge_y = 0,
   ...,
@@ -106,6 +108,9 @@ beard which is drawn down the comparison group, this will be recycled to fit
 the number of panel. Using \link[ggplot2:element]{rel} to signal values as the
 fraction of the difference between the horizontal segment and the maximal
 value of current group.  Default: \code{rel(0.01)}}
+
+\item{label_color, segment_color}{Color for the label and segment lines, if
+\code{NULL}, will use the mapped color.}
 
 \item{nudge_x, nudge_y}{Horizontal and vertical adjustment to nudge labels by.
 Useful for offsetting text from segments, particularly on discrete scales.
