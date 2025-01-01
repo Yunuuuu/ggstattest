@@ -284,7 +284,7 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
                 method <- rlang::as_function(method)
                 label <- rlang::as_function(label_fn)
                 pvalue <- rlang::as_function(pvalue)
-                test_out_list <- vapply(compare_list, function(comparison) {
+                test_out_list <- lapply(compare_list, function(comparison) {
                     test_data <- data[data$x %in% comparison, ]
                     # since in ggplot2, position aesthetics are always regarded
                     # as numerical value, we transform it into factor to perform
@@ -302,7 +302,7 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
                     }
                 }, numeric(1L), USE.NAMES = FALSE)
                 if (!is.null(p.adjust)) {
-                    pvalues <- stats::p.adjust(pvalues, p.adjus)
+                    pvalues <- stats::p.adjust(pvalues, p.adjust)
                 }
                 labels <- as.character(label(pvalues))
                 if (isTRUE(hide_ns)) {
