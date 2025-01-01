@@ -198,7 +198,7 @@ GeomComparetest <- ggplot2::ggproto("GeomComparetest", ggplot2::Geom,
             na.rm = params$na.rm,
             name = "geom_comparetest"
         )
-        data <- data[data$label != "...hide...", , drop = FALSE]
+        data <- data[data$label != ".__hide__", , drop = FALSE]
         data <- data[order(data$y), ]
 
         # for label data, there are two things

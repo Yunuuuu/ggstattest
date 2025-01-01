@@ -37,6 +37,8 @@ stat_comparetest(
   method = "nonparametric",
   method_args = NULL,
   compare_list = NULL,
+  pvalue = NULL,
+  p.adjust = NULL,
   label_fn = NULL,
   hide_ns = TRUE,
   sig_level = 0.05,
@@ -178,9 +180,17 @@ position aesthetics is regarded as the dependent variable. the order
 specified in the \code{compare_list} will be regarded as the level of the
 independent variable.}
 
-\item{label_fn}{A function or formula which accepts results returned by
-function in \strong{method} and return a scalar character. If you want to hide
-some results in the \code{geom_comparetest}, return "...hide...".
+\item{pvalue}{A function or formula which accepts results returned by
+function in \strong{method} and return a single number of the pvalue. By
+default, will subset the \code{p.value} field.}
+
+\item{p.adjust}{A single string indicates the method to adjust pvalues for
+multiple comparisons. If \code{NULL}, no adjustment will be applied. See
+\code{\link[stats:p.adjust]{p.adjust()}} for details.}
+
+\item{label_fn}{A function or formula which accepts the pvalue and return
+character. If you want to hide some results in the \code{geom_comparetest},
+return ".\strong{hide}".
 
 If a \strong{function}, it is used as is.
 
@@ -200,12 +210,10 @@ each comparisons of compare_list, which will be matched by names if elements
 in both \strong{label_fn} and \strong{compare_list} have names otherwise by position.}
 
 \item{hide_ns}{A scalar logical value or a function (can be purrr-style)
-which take statistical result as an argument and return a logical value
-indicating whether hide this result. If TRUE, this will flag the
-insignificant statistical result (\code{p.value >= sig_level}: "p.value" is
-obtained by \code{stat_result$p.value}, so ensure the results returned by
-\code{method} have a "p.value" item) with "...hide..." and \code{geom_comparetest}
-will remove rows with "...hide...".}
+which take the statistical result as input and return a single boolean
+value indicating whether hide this result. If TRUE, this will flag the
+insignificant statistical result (\code{p.value >= sig_level}) with ".\strong{hide}"
+and \code{geom_comparetest} will remove rows with ".\strong{hide}".}
 
 \item{sig_level}{The significant level used by \code{hide_ns}. Default: \code{0.05}.}
 

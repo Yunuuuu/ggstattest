@@ -15,9 +15,18 @@
 #'   position aesthetics is regarded as the dependent variable. the order
 #'   specified in the `compare_list` will be regarded as the level of the
 #'   independent variable.
-#' @param label_fn A function or formula which accepts results returned by
-#'   function in **method** and return a scalar character. If you want to hide
-#'   some results in the `geom_comparetest`, return "...hide...".
+#'
+#' @param pvalue A function or formula which accepts results returned by
+#'   function in **method** and return a single number of the pvalue. By
+#'   default, will subset the `p.value` field.
+#'
+#' @param p.adjust A single string indicates the method to adjust pvalues for
+#' multiple comparisons. If `NULL`, no adjustment will be applied. See
+#' [`p.adjust()`][stats::p.adjust] for details.
+#'
+#' @param label_fn A function or formula which accepts the pvalue and return
+#'   character. If you want to hide some results in the `geom_comparetest`,
+#'   return ".__hide__".
 #'
 #'   If a **function**, it is used as is.
 #'
@@ -35,13 +44,13 @@
 #' this way, this will be used in every PANEL) corresponding to the result in
 #' each comparisons of compare_list, which will be matched by names if elements
 #' in both **label_fn** and **compare_list** have names otherwise by position.
+#'
 #' @param hide_ns A scalar logical value or a function (can be purrr-style)
-#'   which take statistical result as an argument and return a logical value
-#'   indicating whether hide this result. If TRUE, this will flag the
-#'   insignificant statistical result (`p.value >= sig_level`: "p.value" is
-#'   obtained by `stat_result$p.value`, so ensure the results returned by
-#'   `method` have a "p.value" item) with "...hide..." and `geom_comparetest`
-#'   will remove rows with "...hide...".
+#'   which take the statistical result as input and return a single boolean
+#'   value indicating whether hide this result. If TRUE, this will flag the
+#'   insignificant statistical result (`p.value >= sig_level`) with ".__hide__"
+#'   and `geom_comparetest` will remove rows with ".__hide__".
+#'
 #' @param sig_level The significant level used by `hide_ns`. Default: `0.05`.
 #' @inheritParams ggplot2::stat_identity
 #' @section Computed variables:
@@ -67,6 +76,7 @@ stat_comparetest <- function(mapping = NULL, data = NULL,
                              method = "nonparametric",
                              method_args = NULL,
                              compare_list = NULL,
+                             pvalue = NULL, p.adjust = NULL,
                              label_fn = NULL,
                              hide_ns = TRUE,
                              sig_level = 0.05,
@@ -80,8 +90,9 @@ stat_comparetest <- function(mapping = NULL, data = NULL,
         params = rlang::list2(
             method = method,
             hide_ns = hide_ns,
-            compare_list = compare_list,
             method_args = method_args,
+            compare_list = compare_list,
+            pvalue = pvalue, p.adjust = p.adjust,
             label_fn = label_fn,
             na.rm = na.rm, ...
         )
@@ -123,10 +134,19 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
             }
         }
 
+        if (is.null(params$pvalue)) {
+            params$pvalue <- function(x) x$p.value
+        }
+        if (is.null(params$p.adjust)) {
+            params$p.adjust <- match.arg(
+                params$p.adjust, stats::p.adjust.methods
+            )
+        }
+
         if (is.null(params$label_fn)) {
             params$label_fn <- function(x) {
                 stats::symnum(
-                    x$p.value,
+                    x,
                     cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 1),
                     symbols = c("****", "***", "**", "*", "ns")
                 )
@@ -147,6 +167,7 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
     compute_panel = function(data, scales, method = "nonparametric",
                              hide_ns = TRUE, sig_level = 0.05,
                              compare_list = NULL, method_args = list(),
+                             pvalue = NULL, p.adjust = NULL,
                              label_fn = NULL, na.rm = FALSE,
                              flipped_aes = FALSE) {
         data <- ggplot2::flip_data(data, flipped_aes)
@@ -186,7 +207,7 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
         }
 
         # to plot a statistical test results, we need (x, y, label)
-        # x, y stand for the coordinate to put the statistical results (a string
+        # x, y represent the coordinate to put the statistical results (a string
         # label)
         # the compare_list define the comparison groups position in the x axis.
         # The horizontal segment should span range from min(x) to max(x)
@@ -236,8 +257,9 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
         # define label
         if (identical(method, "none")) {
             if (is.list(label_fn)) label_fn <- label_fn[[data$PANEL[[1L]]]]
-            label <- vapply(seq_along(compare_list), function(i) {
-                if (all(rlang::have_name(label_fn)) && all(rlang::have_name(compare_list))) {
+            labels <- vapply(seq_along(compare_list), function(i) {
+                if (all(rlang::have_name(label_fn)) &&
+                    all(rlang::have_name(compare_list))) {
                     label <- label_fn[[names(compare_list)[[i]]]]
                 } else {
                     label <- label_fn[[i]]
@@ -260,33 +282,38 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
             }
             if (length(compare_list)) {
                 method <- rlang::as_function(method)
-                label_fn <- rlang::as_function(label_fn)
-                label <- vapply(compare_list, function(comparison) {
+                label <- rlang::as_function(label_fn)
+                pvalue <- rlang::as_function(pvalue)
+                test_out_list <- vapply(compare_list, function(comparison) {
                     test_data <- data[data$x %in% comparison, ]
                     # since in ggplot2, position aesthetics are always regarded
                     # as numerical value, we transform it into factor to perform
                     # comparison
                     test_data$x <- factor(test_data$x, levels = comparison)
-                    test_res <- rlang::inject(method(
-                        formula = y ~ x,
-                        data = test_data,
-                        !!!method_args
+                    rlang::inject(method(
+                        formula = y ~ x, data = test_data, !!!method_args
                     ))
-                    if (isTRUE(hide_ns)) {
-                        if (!is.null(test_res$p.value) &&
-                            (is.na(test_res$p.value) ||
-                                test_res$p.value >= sig_level)) {
-                            return("...hide...")
-                        }
+                })
+                pvalues <- vapply(test_out_list, function(test_out) {
+                    if (is.null(ans <- pvalue(test_out))) {
+                        NA_real_
+                    } else {
+                        as.numeric(ans)
                     }
-                    as.character(label_fn(test_res))
-                }, character(1L), USE.NAMES = FALSE)
+                }, numeric(1L), USE.NAMES = FALSE)
+                if (!is.null(p.adjust)) {
+                    pvalues <- stats::p.adjust(pvalues, p.adjus)
+                }
+                labels <- as.character(label(pvalues))
+                if (isTRUE(hide_ns)) {
+                    labels[is.na(pvalues) | pvalues >= sig_level] <- ".__hide__"
+                }
             }
         }
         stat_data$x <- (stat_data$xmin + stat_data$xmax) / 2L
-        stat_data$label <- label
-        stat_data$tip <- lapply(stat_data$tip,
-            ggplot2::flip_data,
+        stat_data$label <- labels
+        stat_data$tip <- lapply(
+            stat_data$tip, ggplot2::flip_data,
             flip = flipped_aes
         )
         stat_data$flipped_aes <- flipped_aes
