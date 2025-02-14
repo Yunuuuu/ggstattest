@@ -137,7 +137,7 @@ StatComparetest <- ggplot2::ggproto("StatComparetest", ggplot2::Stat,
         if (is.null(params$pvalue)) {
             params$pvalue <- function(x) x$p.value
         }
-        if (is.null(params$p.adjust)) {
+        if (!is.null(params$p.adjust)) {
             params$p.adjust <- match.arg(
                 params$p.adjust, stats::p.adjust.methods
             )
